@@ -12,9 +12,9 @@
   <script>if(location.search||location.hash)history.replaceState(null,'',location.pathname);</script>
 </head>
 <body>
-  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270903-13"></iframe>
+  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270903-14"></iframe>
   <script>
-    const BUILD='20270903-13';
+    const BUILD='20270903-14';
     const frame=document.getElementById('trainer');
     frame.addEventListener('load',()=>{
       const d=frame.contentDocument;
@@ -25,8 +25,10 @@
           load('question-bank-final-fix','question-bank-final-fix.js',()=>{
             load('my-subjects','my-subjects.js',()=>{
               load('practice-bank-core','practice-bank-core.js',()=>{
-                load('trainer-upgrade-v2','trainer-upgrade-v2.js',()=>{
-                  load('room-network-fix','room-network-fix.js');
+                load('practice-bank-all','practice-bank-all.js',()=>{
+                  load('trainer-upgrade-v2','trainer-upgrade-v2.js',()=>{
+                    load('room-network-fix','room-network-fix.js');
+                  });
                 });
               });
             });
