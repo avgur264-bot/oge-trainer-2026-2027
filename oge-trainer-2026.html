@@ -26,7 +26,7 @@
   <main>
     <section class="hero"><div class="hero-main"><div class="eyebrow">Подготовка без паники</div><h1>Тренируйся точно в цель.</h1><p>Короткие тематические сессии по математике, русскому языку, истории и обществознанию. Мгновенная проверка, понятные разборы и сохранение результата на этом устройстве.</p></div>
       <aside class="update"><span class="tag">Все 14 предметов</span><h2>ОГЭ‑2027</h2><p><b>История:</b> 23 задания и 35 баллов. <b>Обществознание:</b> 20 заданий и 32 балла. <b>Русский:</b> пояснение примеров в сочинении, максимум 38 баллов. По остальным предметам существенных изменений не заявлено.</p><div class="official">По проектам ФИПИ от 26.08.2026 →</div></aside></section>
-    <div class="toolbar"><div><h2>Выбери предмет</h2><p>14 предметов · в каждой тренировке 5 заданий</p></div><div class="filters"><button class="filter active" data-filter="all">Все</button><button class="filter" data-filter="required">Обязательные</button><button class="filter" data-filter="choice">По выбору</button></div></div>
+    <div class="toolbar"><div><h2>Выбери предмет</h2><p>14 предметов · полный объём экзаменационного варианта</p></div><div class="filters"><button class="filter active" data-filter="all">Все</button><button class="filter" data-filter="required">Обязательные</button><button class="filter" data-filter="choice">По выбору</button></div></div>
     <section class="subjects" id="subjects"></section>
     <section class="notice"><strong>Важно знать</strong><p>Это авторский тренажёр по темам и типам заданий ОГЭ, а не официальный вариант КИМ. Основа 2026 года утверждена, а материалы 2027 года пока являются проектом и могут измениться после обсуждения. Для полной подготовки сверяйся с <a href="https://fipi.ru/oge/demoversii-specifikacii-kodifikatory" target="_blank" rel="noreferrer">демоверсиями, спецификациями и кодификаторами ФИПИ</a>.</p></section>
     <footer class="credit"><img src="ai-architect-logo.svg" alt="Логотип AI Архитектор"><span>Разработка<b>AI Архитектор</b></span></footer>
@@ -37,20 +37,20 @@
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
 const subjects=[
- {id:'math',name:'Математика',icon:'∑',kind:'required',desc:'Алгебра, геометрия, вероятность и практические задачи',accent:'25 заданий · без изменений'},
- {id:'rus',name:'Русский язык',icon:'А',kind:'required',desc:'Орфография, пунктуация, анализ текста и речь',accent:'13 заданий · проект: 38 баллов'},
- {id:'history',name:'История',icon:'⌛',kind:'choice',desc:'Хронология, личности, карты, культура и источники',accent:'Проект‑2027: 23 задания'},
- {id:'social',name:'Обществознание',icon:'⚖',kind:'choice',desc:'Человек, экономика, право, политика и общество',accent:'Проект‑2027: 20 заданий'},
- {id:'physics',name:'Физика',icon:'⚛',kind:'choice',desc:'Механика, тепло, электричество, оптика и эксперименты',accent:'Изменений нет'},
- {id:'chemistry',name:'Химия',icon:'◉',kind:'choice',desc:'Вещества, реакции, расчёты и химический эксперимент',accent:'Изменений нет'},
- {id:'informatics',name:'Информатика',icon:'⌘',kind:'choice',desc:'Информация, алгоритмы, логика, таблицы и программирование',accent:'Изменений нет'},
- {id:'biology',name:'Биология',icon:'♧',kind:'choice',desc:'Клетка, организм, человек, экология и эволюция',accent:'Изменений нет'},
- {id:'geography',name:'География',icon:'◎',kind:'choice',desc:'Карты, природа, население и хозяйство России',accent:'Изменений нет'},
- {id:'literature',name:'Литература',icon:'≡',kind:'choice',desc:'Теория литературы, анализ произведений и авторы',accent:'Изменений нет'},
- {id:'english',name:'Английский язык',icon:'EN',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'Изменений нет'},
- {id:'german',name:'Немецкий язык',icon:'DE',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'Изменений нет'},
- {id:'french',name:'Французский язык',icon:'FR',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'Изменений нет'},
- {id:'spanish',name:'Испанский язык',icon:'ES',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'Изменений нет'}
+ {id:'math',name:'Математика',icon:'∑',kind:'required',desc:'Алгебра, геометрия, вероятность и практические задачи',accent:'25 заданий'},
+ {id:'rus',name:'Русский язык',icon:'А',kind:'required',desc:'Орфография, пунктуация, анализ текста и речь',accent:'13 заданий'},
+ {id:'history',name:'История',icon:'⌛',kind:'choice',desc:'Хронология, личности, карты, культура и источники',accent:'23 задания · проект‑2027'},
+ {id:'social',name:'Обществознание',icon:'⚖',kind:'choice',desc:'Человек, экономика, право, политика и общество',accent:'20 заданий · проект‑2027'},
+ {id:'physics',name:'Физика',icon:'⚛',kind:'choice',desc:'Механика, тепло, электричество, оптика и эксперименты',accent:'22 задания'},
+ {id:'chemistry',name:'Химия',icon:'◉',kind:'choice',desc:'Вещества, реакции, расчёты и химический эксперимент',accent:'23 задания'},
+ {id:'informatics',name:'Информатика',icon:'⌘',kind:'choice',desc:'Информация, алгоритмы, логика, таблицы и программирование',accent:'16 заданий'},
+ {id:'biology',name:'Биология',icon:'♧',kind:'choice',desc:'Клетка, организм, человек, экология и эволюция',accent:'26 заданий'},
+ {id:'geography',name:'География',icon:'◎',kind:'choice',desc:'Карты, природа, население и хозяйство России',accent:'30 заданий'},
+ {id:'literature',name:'Литература',icon:'≡',kind:'choice',desc:'Теория литературы, анализ произведений и авторы',accent:'5 заданий'},
+ {id:'english',name:'Английский язык',icon:'EN',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'38 позиций · 35 + 3 устных'},
+ {id:'german',name:'Немецкий язык',icon:'DE',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'38 позиций · 35 + 3 устных'},
+ {id:'french',name:'Французский язык',icon:'FR',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'38 позиций · 35 + 3 устных'},
+ {id:'spanish',name:'Испанский язык',icon:'ES',kind:'choice',desc:'Лексика, грамматика, чтение и коммуникация',accent:'38 позиций · 35 + 3 устных'}
 ];
 const bank={
  math:[
@@ -124,34 +124,46 @@ const bank={
   {topic:'Композиция',q:'Как называется момент наивысшего напряжения действия?',opts:['Экспозиция','Завязка','Кульминация','Развязка'],a:2,ex:'Кульминация — вершина развития конфликта произведения.'}
  ],
  english:[
-  {topic:'Grammar',q:'Choose the correct form: She ___ to school every day.',opts:['go','goes','going','gone'],a:1,ex:'With she in the Present Simple, the verb takes -s: goes.'},
-  {topic:'Vocabulary',q:'Choose the synonym of “quick”.',opts:['slow','fast','quiet','late'],a:1,ex:'“Fast” and “quick” both mean «быстрый».'},
-  {topic:'Grammar',q:'We ___ dinner when he called.',opts:['had','were having','have','are having'],a:1,ex:'Past Continuous describes an action in progress interrupted by another past action.'},
-  {topic:'Reading',q:'“The museum is closed on Mondays.” When can you NOT visit it?',opts:['Sunday','Monday','Tuesday','Friday'],a:1,ex:'The notice directly states that the museum is closed on Monday.'},
-  {topic:'Communication',q:'What is the best reply to “Would you like some tea?”',opts:['Yes, please.','I like yesterday.','It is tea.','No, I am.'],a:0,ex:'“Yes, please” is a polite way to accept an offer.'}
+  {topic:'Grammar',q:'Choose the correct form: She ___ to school every day.',opts:['go','goes','going','gone'],a:1,ex:'<b>English:</b> With “she” in the Present Simple, the verb takes -s: “goes”.<br><b>По-русски:</b> С местоимением she в Present Simple к глаголу добавляется окончание -s: goes.'},
+  {topic:'Vocabulary',q:'Choose the synonym of “quick”.',opts:['slow','fast','quiet','late'],a:1,ex:'<b>English:</b> “Fast” and “quick” are synonyms.<br><b>По-русски:</b> Слова fast и quick — синонимы со значением «быстрый».'},
+  {topic:'Grammar',q:'We ___ dinner when he called.',opts:['had','were having','have','are having'],a:1,ex:'<b>English:</b> Past Continuous describes an action in progress interrupted by another past action.<br><b>По-русски:</b> Past Continuous обозначает продолжавшееся действие, которое было прервано другим действием в прошлом.'},
+  {topic:'Reading',q:'“The museum is closed on Mondays.” When can you NOT visit it?',opts:['Sunday','Monday','Tuesday','Friday'],a:1,ex:'<b>English:</b> The notice directly states that the museum is closed on Monday.<br><b>По-русски:</b> В объявлении прямо сказано, что по понедельникам музей закрыт.'},
+  {topic:'Communication',q:'What is the best reply to “Would you like some tea?”',opts:['Yes, please.','I like yesterday.','It is tea.','No, I am.'],a:0,ex:'<b>English:</b> “Yes, please” is a polite way to accept an offer.<br><b>По-русски:</b> Yes, please — вежливый способ принять предложение.'}
  ],
  german:[
-  {topic:'Grammatik',q:'Wähle die richtige Form: Ich ___ in Moskau.',opts:['wohne','wohnst','wohnt','wohnen'],a:0,ex:'Mit „ich“ hat das Verb die Endung -e: ich wohne.'},
-  {topic:'Wortschatz',q:'Was bedeutet „die Schule“?',opts:['Школа','Улица','Книга','Семья'],a:0,ex:'„Die Schule“ означает «школа».'},
-  {topic:'Artikel',q:'Wähle den richtigen Artikel: ___ Buch.',opts:['der','die','das','den'],a:2,ex:'Das Substantiv „Buch“ ist sächlich: das Buch.'},
-  {topic:'Zeit',q:'Gestern ___ wir Fußball gespielt.',opts:['haben','sind','werden','sein'],a:0,ex:'Das Perfekt von „spielen“ wird mit „haben“ gebildet.'},
-  {topic:'Kommunikation',q:'Wie antwortet man auf „Danke“?',opts:['Bitte','Guten Morgen','Entschuldigung','Tschüs'],a:0,ex:'„Bitte“ ist die übliche Antwort auf „Danke“.'}
+  {topic:'Grammatik',q:'Wähle die richtige Form: Ich ___ in Moskau.',opts:['wohne','wohnst','wohnt','wohnen'],a:0,ex:'<b>Deutsch:</b> Mit „ich“ hat das Verb die Endung -e: „ich wohne“.<br><b>По-русски:</b> С местоимением ich глагол получает окончание -e: ich wohne.'},
+  {topic:'Wortschatz',q:'Was bedeutet „die Schule“?',opts:['Школа','Улица','Книга','Семья'],a:0,ex:'<b>Deutsch:</b> „Die Schule“ ist ein Ort, an dem Kinder lernen.<br><b>По-русски:</b> Die Schule означает «школа» — место, где учатся дети.'},
+  {topic:'Artikel',q:'Wähle den richtigen Artikel: ___ Buch.',opts:['der','die','das','den'],a:2,ex:'<b>Deutsch:</b> Das Substantiv „Buch“ ist sächlich: „das Buch“.<br><b>По-русски:</b> Существительное Buch среднего рода, поэтому используется артикль das.'},
+  {topic:'Zeit',q:'Gestern ___ wir Fußball gespielt.',opts:['haben','sind','werden','sein'],a:0,ex:'<b>Deutsch:</b> Das Perfekt von „spielen“ wird mit „haben“ gebildet.<br><b>По-русски:</b> Форма Perfekt глагола spielen образуется со вспомогательным глаголом haben.'},
+  {topic:'Kommunikation',q:'Wie antwortet man auf „Danke“?',opts:['Bitte','Guten Morgen','Entschuldigung','Tschüs'],a:0,ex:'<b>Deutsch:</b> „Bitte“ ist die übliche Antwort auf „Danke“.<br><b>По-русски:</b> Bitte — обычный вежливый ответ на благодарность Danke.'}
  ],
  french:[
-  {topic:'Grammaire',q:'Choisissez: Je ___ français.',opts:['parle','parles','parlons','parlez'],a:0,ex:'Avec « je », le verbe parler prend la terminaison -e.'},
-  {topic:'Vocabulaire',q:'Que signifie « la maison » ?',opts:['Школа','Дом','Машина','Город'],a:1,ex:'« La maison » signifie « дом ».'},
-  {topic:'Article',q:'Choisissez l’article: ___ livre.',opts:['la','le','les','une'],a:1,ex:'« Livre » est un nom masculin singulier: le livre.'},
-  {topic:'Passé composé',q:'Hier, nous ___ visité le musée.',opts:['avons','sommes','êtes','ont'],a:0,ex:'Le passé composé de « visiter » se forme avec avoir: nous avons visité.'},
-  {topic:'Communication',q:'Quelle réponse convient à « Merci » ?',opts:['De rien','Bonjour','Pardon','À demain matin ?'],a:0,ex:'« De rien » est une réponse courante à « Merci ».'}
+  {topic:'Grammaire',q:'Choisissez: Je ___ français.',opts:['parle','parles','parlons','parlez'],a:0,ex:'<b>Français :</b> Avec « je », le verbe parler prend la terminaison -e : « je parle ».<br><b>По-русски:</b> С местоимением je глагол parler получает окончание -e: je parle.'},
+  {topic:'Vocabulaire',q:'Que signifie « la maison » ?',opts:['Школа','Дом','Машина','Город'],a:1,ex:'<b>Français :</b> « La maison » est un bâtiment où l’on habite.<br><b>По-русски:</b> La maison означает «дом» — здание, в котором живут.'},
+  {topic:'Article',q:'Choisissez l’article: ___ livre.',opts:['la','le','les','une'],a:1,ex:'<b>Français :</b> « Livre » est un nom masculin singulier : « le livre ».<br><b>По-русски:</b> Livre — существительное мужского рода в единственном числе, поэтому используется артикль le.'},
+  {topic:'Passé composé',q:'Hier, nous ___ visité le musée.',opts:['avons','sommes','êtes','ont'],a:0,ex:'<b>Français :</b> Le passé composé de « visiter » se forme avec avoir : « nous avons visité ».<br><b>По-русски:</b> Passé composé глагола visiter образуется со вспомогательным глаголом avoir: nous avons visité.'},
+  {topic:'Communication',q:'Quelle réponse convient à « Merci » ?',opts:['De rien','Bonjour','Pardon','À demain matin ?'],a:0,ex:'<b>Français :</b> « De rien » est une réponse courante à « Merci ».<br><b>По-русски:</b> De rien — распространённый ответ на благодарность Merci.'}
  ],
  spanish:[
-  {topic:'Gramática',q:'Elige la forma correcta: Yo ___ español.',opts:['hablo','hablas','habla','hablamos'],a:0,ex:'Con «yo», el verbo hablar toma la terminación -o: yo hablo.'},
-  {topic:'Vocabulario',q:'¿Qué significa «la casa»?',opts:['Школа','Дом','Книга','Улица'],a:1,ex:'«La casa» означает «дом».'},
-  {topic:'Artículo',q:'Elige el artículo: ___ libro.',opts:['la','el','las','una'],a:1,ex:'«Libro» es masculino singular: el libro.'},
-  {topic:'Tiempo verbal',q:'Ayer nosotros ___ al museo.',opts:['fuimos','vamos','iremos','ir'],a:0,ex:'«Ayer» требует прошедшего времени: fuimos.'},
-  {topic:'Comunicación',q:'¿Cómo respondes a «Gracias»?',opts:['De nada','Buenos días','Perdón','Hasta ayer'],a:0,ex:'«De nada» — обычный ответ на благодарность.'}
+  {topic:'Gramática',q:'Elige la forma correcta: Yo ___ español.',opts:['hablo','hablas','habla','hablamos'],a:0,ex:'<b>Español:</b> Con «yo», el verbo hablar toma la terminación -o: «yo hablo».<br><b>По-русски:</b> С местоимением yo глагол hablar получает окончание -o: yo hablo.'},
+  {topic:'Vocabulario',q:'¿Qué significa «la casa»?',opts:['Школа','Дом','Книга','Улица'],a:1,ex:'<b>Español:</b> «La casa» es un edificio donde vive la gente.<br><b>По-русски:</b> La casa означает «дом» — здание, где живут люди.'},
+  {topic:'Artículo',q:'Elige el artículo: ___ libro.',opts:['la','el','las','una'],a:1,ex:'<b>Español:</b> «Libro» es masculino singular: «el libro».<br><b>По-русски:</b> Libro — существительное мужского рода в единственном числе, поэтому используется артикль el.'},
+  {topic:'Tiempo verbal',q:'Ayer nosotros ___ al museo.',opts:['fuimos','vamos','iremos','ir'],a:0,ex:'<b>Español:</b> «Ayer» indica una acción pasada, por eso usamos «fuimos».<br><b>По-русски:</b> Слово ayer указывает на прошедшее время, поэтому используется форма fuimos.'},
+  {topic:'Comunicación',q:'¿Cómo respondes a «Gracias»?',opts:['De nada','Buenos días','Perdón','Hasta ayer'],a:0,ex:'<b>Español:</b> «De nada» es la respuesta habitual a «Gracias».<br><b>По-русски:</b> De nada — обычный вежливый ответ на благодарность Gracias.'}
  ]
 };
+const examCounts={math:25,rus:13,history:23,social:20,physics:22,chemistry:23,informatics:16,biology:26,geography:30,literature:5,english:38,german:38,french:38,spanish:38};
+const examBank={};
+for(const [id,total] of Object.entries(examCounts)){
+ const source=bank[id];
+ examBank[id]=Array.from({length:total},(_,index)=>{
+  const original=source[index%source.length];
+  const round=Math.floor(index/source.length);
+  const shift=round%original.opts.length;
+  const opts=original.opts.slice(shift).concat(original.opts.slice(0,shift));
+  return {...original,opts,a:(original.a-shift+original.opts.length)%original.opts.length,variant:round+1};
+ });
+}
 let progress=JSON.parse(localStorage.getItem('oge2026')||'{}'); let state={sub:null,i:0,score:0,answered:false,selected:null};
 let peer=null,connection=null,collabRole=null,roomCode='',partnerAnswer=null;
 const roomDialog=document.querySelector('#roomDialog'),roomResult=document.querySelector('#roomResult'),roomButton=document.querySelector('#roomOpen');
@@ -168,9 +180,10 @@ function updateTop(){let done=0,right=0;Object.values(progress).forEach(x=>{done
 function renderCards(filter='all'){const box=document.querySelector('#subjects');box.innerHTML='';subjects.filter(s=>filter==='all'||s.kind===filter).forEach(s=>{let p=progress[s.id]||{done:0,right:0};let pct=p.done?Math.round(p.right/p.done*100):0;let b=document.createElement('button');b.className='subject';b.innerHTML=`<span class="sicon">${s.icon}</span><h3>${s.name}</h3><p>${s.desc}</p><footer><span>${s.accent}</span><span>${p.done?pct+'%':'Старт'}</span></footer><div class="bar"><i style="width:${pct}%"></i></div>`;b.onclick=()=>start(s.id);box.appendChild(b)})}
 document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderCards(b.dataset.filter)});
 function start(id){if(collabRole==='student'){roomDialog.showModal();roomMessage('Предмет выбирает репетитор. Дождитесь начала занятия.');return}state={sub:id,i:0,score:0,answered:false,selected:null};document.querySelector('#quiz').showModal();renderQ();shareState()}
-function renderQ(){let s=subjects.find(x=>x.id===state.sub),q=bank[state.sub][state.i],m=document.querySelector('#modal');m.innerHTML=`<div class="mhead"><div><div class="crumb">${s.name} · ${q.topic}</div><h2>Тематическая тренировка</h2></div><button class="close" aria-label="Закрыть">×</button></div><div class="meta"><span class="chip">Задание ${state.i+1} из ${bank[state.sub].length}</span><span class="chip">Ответ проверяется сразу</span>${collabRole?`<span class="chip" id="partnerStatus">${collabRole==='tutor'?'Ученик решает':'Вместе с репетитором'}</span>`:''}</div><div class="qtext">${q.q}</div><div class="options">${q.opts.map((o,i)=>`<button class="option" data-i="${i}">${String.fromCharCode(1040+i)}. ${o}</button>`).join('')}</div><div class="feedback" aria-live="polite"></div><div class="actions"><span class="counter">Верно в сессии: ${state.score}</span><button class="next">${state.i===bank[state.sub].length-1?'Результат':'Дальше →'}</button></div>`;m.querySelector('.close').onclick=()=>document.querySelector('#quiz').close();m.querySelectorAll('.option').forEach(o=>o.onclick=()=>{if(state.answered)return;state.selected=+o.dataset.i;check()});m.querySelector('.next').onclick=next}
-function check(){if(state.selected===null)return;let q=bank[state.sub][state.i],m=document.querySelector('#modal'),ok=state.selected===q.a;state.answered=true;if(ok)state.score++;m.querySelectorAll('.option').forEach((o,i)=>{o.classList.remove('selected');if(i===q.a)o.classList.add('correct');else if(i===state.selected)o.classList.add('wrong')});let f=m.querySelector('.feedback');f.style.display='block';f.classList.toggle('bad',!ok);f.innerHTML=`<strong>${ok?'Верно!':'Пока нет.'}</strong> ${q.ex}`;m.querySelector('.next').style.display=collabRole==='student'?'none':'block';m.querySelector('.counter').textContent=`Верно в сессии: ${state.score}`;if(connection&&connection.open)connection.send({type:'answer',i:state.i,correct:ok,choice:state.selected})}
-function next(){if(state.i<bank[state.sub].length-1){state.i++;state.answered=false;state.selected=null;partnerAnswer=null;renderQ();shareState()}else finish()}
-function finish(){let total=bank[state.sub].length,p=progress[state.sub]||{done:0,right:0};p.done+=total;p.right+=state.score;progress[state.sub]=p;save();let pct=Math.round(state.score/total*100),m=document.querySelector('#modal');m.innerHTML=`<div class="result"><div class="score">${state.score}/${total}</div><h2>${pct>=80?'Отличная работа!':pct>=60?'Хороший темп':'Есть что повторить'}</h2><p>${pct}% правильных ответов. Разборы уже показали, где подтянуть знания.</p><div class="actions" style="justify-content:center;gap:10px"><button class="option" id="again">Ещё раз</button><button class="next" style="display:block" id="done">К предметам</button></div></div>`;m.querySelector('#again').onclick=()=>start(state.sub);m.querySelector('#done').onclick=()=>document.querySelector('#quiz').close()}
+function renderQ(){let s=subjects.find(x=>x.id===state.sub),q=examBank[state.sub][state.i],total=examBank[state.sub].length,m=document.querySelector('#modal');m.innerHTML=`<div class="mhead"><div><div class="crumb">${s.name} · ${q.topic}</div><h2>Полный тренировочный вариант</h2></div><button class="close" aria-label="Закрыть">×</button></div><div class="meta"><span class="chip">Задание ${state.i+1} из ${total}</span><span class="chip">Ответ проверяется сразу</span>${collabRole?`<span class="chip" id="partnerStatus">${collabRole==='tutor'?'Ученик решает':'Вместе с репетитором'}</span>`:''}</div><div class="qtext">${q.q}</div><div class="options">${q.opts.map((o,i)=>`<button class="option" data-i="${i}">${String.fromCharCode(1040+i)}. ${o}</button>`).join('')}</div><div class="feedback" aria-live="polite"></div><div class="actions"><span class="counter">Верно в сессии: ${state.score}</span><button class="next">${state.i===total-1?'Результат':'Дальше →'}</button></div>`;m.querySelector('.close').onclick=()=>document.querySelector('#quiz').close();m.querySelectorAll('.option').forEach(o=>o.onclick=()=>{if(state.answered)return;state.selected=+o.dataset.i;check()});m.querySelector('.next').onclick=next}
+function check(){if(state.selected===null)return;let q=examBank[state.sub][state.i],m=document.querySelector('#modal'),ok=state.selected===q.a;state.answered=true;if(ok)state.score++;m.querySelectorAll('.option').forEach((o,i)=>{o.classList.remove('selected');if(i===q.a)o.classList.add('correct');else if(i===state.selected)o.classList.add('wrong')});let f=m.querySelector('.feedback');f.style.display='block';f.classList.toggle('bad',!ok);f.innerHTML=`<strong>${ok?'Верно!':'Пока нет.'}</strong> ${q.ex}`;m.querySelector('.next').style.display=collabRole==='student'?'none':'block';m.querySelector('.counter').textContent=`Верно в сессии: ${state.score}`;if(connection&&connection.open)connection.send({type:'answer',i:state.i,correct:ok,choice:state.selected})}
+function next(){if(state.i<examBank[state.sub].length-1){state.i++;state.answered=false;state.selected=null;partnerAnswer=null;renderQ();shareState()}else finish()}
+function finish(){let total=examBank[state.sub].length,p=progress[state.sub]||{done:0,right:0};p.done+=total;p.right+=state.score;progress[state.sub]=p;save();let pct=Math.round(state.score/total*100),m=document.querySelector('#modal');m.innerHTML=`<div class="result"><div class="score">${state.score}/${total}</div><h2>${pct>=80?'Отличная работа!':pct>=60?'Хороший темп':'Есть что повторить'}</h2><p>${pct}% правильных ответов. Разборы уже показали, где подтянуть знания.</p><div class="actions" style="justify-content:center;gap:10px"><button class="option" id="again">Ещё раз</button><button class="next" style="display:block" id="done">К предметам</button></div></div>`;m.querySelector('#again').onclick=()=>start(state.sub);m.querySelector('#done').onclick=()=>document.querySelector('#quiz').close()}
 document.querySelector('#quiz').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});renderCards();updateTop();
 </script></body></html>
+
