@@ -14,9 +14,9 @@
   </script>
 </head>
 <body>
-  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270903-11"></iframe>
+  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270903-12"></iframe>
   <script>
-    const BUILD='20270903-11';
+    const BUILD='20270903-12';
     const frame=document.getElementById('trainer');
     frame.addEventListener('load',()=>{
       const d=frame.contentDocument;
@@ -32,7 +32,9 @@
         load('question-bank-all-fix','question-bank-all-fix.js',()=>{
           load('question-bank-final-fix','question-bank-final-fix.js',()=>{
             load('my-subjects','my-subjects.js',()=>{
-              load('room-network-fix','room-network-fix.js');
+              load('trainer-upgrade','trainer-upgrade.js',()=>{
+                load('room-network-fix','room-network-fix.js');
+              });
             });
           });
         });
