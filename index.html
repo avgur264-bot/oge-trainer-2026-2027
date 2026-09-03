@@ -6,12 +6,20 @@
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="pragma" content="no-cache">
   <meta http-equiv="expires" content="0">
+  <link rel="canonical" href="https://avgur264-bot.github.io/oge-trainer-2026-2027/">
   <title>ОГЭ–ЕГЭ Навигатор 2027</title>
   <style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f4f3ec}iframe{display:block;border:0;width:100vw;height:100vh;height:100dvh}</style>
+  <script>
+    // Все старые ссылки вида ?v=... автоматически приводим к одной постоянной ссылке.
+    if (location.search || location.hash) {
+      history.replaceState(null,'',location.pathname);
+    }
+  </script>
 </head>
 <body>
-  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270903-9"></iframe>
+  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270903-10"></iframe>
   <script>
+    const BUILD='20270903-10';
     const frame=document.getElementById('trainer');
     frame.addEventListener('load',()=>{
       const d=frame.contentDocument;
@@ -40,28 +48,20 @@
         w.Peer=StablePeer;
       }
 
-      const s=d.createElement('script');
-      s.id='question-bank-fix';
-      s.src='question-bank-fix.js?v=20270903-9';
-      s.onload=()=>{
-        const a=d.createElement('script');
-        a.id='question-bank-all-fix';
-        a.src='question-bank-all-fix.js?v=20270903-9';
-        a.onload=()=>{
-          const f=d.createElement('script');
-          f.id='question-bank-final-fix';
-          f.src='question-bank-final-fix.js?v=20270903-9';
-          f.onload=()=>{
-            const m=d.createElement('script');
-            m.id='my-subjects';
-            m.src='my-subjects.js?v=20270903-9';
-            d.body.appendChild(m);
-          };
-          d.body.appendChild(f);
-        };
-        d.body.appendChild(a);
+      const load=(id,src,done)=>{
+        const el=d.createElement('script');
+        el.id=id;
+        el.src=src+'?v='+BUILD;
+        if(done) el.onload=done;
+        d.body.appendChild(el);
       };
-      d.body.appendChild(s);
+      load('question-bank-fix','question-bank-fix.js',()=>{
+        load('question-bank-all-fix','question-bank-all-fix.js',()=>{
+          load('question-bank-final-fix','question-bank-final-fix.js',()=>{
+            load('my-subjects','my-subjects.js');
+          });
+        });
+      });
     });
   </script>
 </body>
