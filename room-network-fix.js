@@ -1,89 +1,17 @@
 (()=>{
 'use strict';
-const d=document;
-const roomResult=d.querySelector('#roomResult');
-const roomButton=d.querySelector('#roomOpen');
-const createBtn=d.querySelector('#createRoom');
-const joinBtn=d.querySelector('#joinRoom');
-const joinInput=d.querySelector('#joinCode');
-if(!roomResult||!createBtn||!joinBtn||!joinInput||typeof window.Peer==='undefined') return;
-
-const NativePeer=window.Peer.__nativePeer || window.Peer;
-let activePeer=null;
-let activeConn=null;
-let role=null;
-let code='';
-let retries=0;
+const d=document,SERVER='wss://oge-room-server.avgur264.workers.dev';
+const roomResult=d.querySelector('#roomResult'),roomButton=d.querySelector('#roomOpen'),createBtn=d.querySelector('#createRoom'),joinBtn=d.querySelector('#joinRoom'),joinInput=d.querySelector('#joinCode');
+if(!roomResult||!createBtn||!joinBtn||!joinInput||!window.WebSocket)return;
+let activeConn=null,role=null,code='',opened=false;
 const bridge=window.collabBridge=window.collabBridge||{};
-Object.defineProperties(bridge,{role:{get:()=>role},connected:{get:()=>!!(activeConn&&activeConn.open)},code:{get:()=>code}});
-bridge.send=data=>{if(activeConn&&activeConn.open)activeConn.send(data)};
-
-function msg(text,bad=false){roomResult.innerHTML=`<div class="room-status"${bad?' style="background:#faecea"':''}>${text}</div>`;}
-function errText(e){
- const t=e&&e.type?e.type:'unknown';
- const map={
-  network:'Нет связи с сервером комнат. Откройте страницу в Safari/Chrome и проверьте VPN/фильтры сети.',
-  'server-error':'Сервер комнат временно недоступен.',
-  'socket-error':'Сетевое соединение с сервером комнат было заблокировано.',
-  'socket-closed':'Соединение с сервером комнат закрылось.',
-  'ssl-unavailable':'Защищённое соединение с сервером комнат недоступно.',
-  'browser-incompatible':'Этот встроенный браузер не поддерживает нужный режим WebRTC. Откройте ссылку в Safari или Chrome.',
-  'peer-unavailable':'Комната не найдена. Проверьте шестизначный код.',
-  'unavailable-id':'Такой код комнаты уже занят. Создаём новый…',
-  webrtc:'WebRTC-соединение не удалось. Частая причина — ограничения мобильной сети/NAT; попробуйте другую сеть или Safari/Chrome.'
- };
- return `${map[t]||'Ошибка соединения.'} <small style="display:block;margin-top:6px;opacity:.75">Код ошибки: ${t}</small>`;
-}
-function makePeer(id){
- // Use PeerJS Cloud defaults exactly as documented; only ICE config is supplied.
- return new NativePeer(id,{debug:1,config:{iceServers:[
-  {urls:'stun:stun.l.google.com:19302'},
-  {urls:'stun:stun1.l.google.com:19302'}
- ],sdpSemantics:'unified-plan'}});
-}
-function cleanup(){try{if(activeConn)activeConn.close()}catch{};try{if(activePeer)activePeer.destroy()}catch{};activeConn=null;activePeer=null;}
-function setConnected(){
- if(roomButton){roomButton.textContent=role==='tutor'?'● Комната '+code:'● На занятии';roomButton.classList.add('live');}
- msg(`Соединение установлено. ${role==='tutor'?'Выбирайте предмет — экран ученика синхронизируется.':'Ждите, пока репетитор выберет предмет.'}`);
-}
-function bind(c){
- activeConn=c;
- c.on('open',()=>{setConnected();if(role==='tutor'&&typeof window.shareCollabV4==='function')window.shareCollabV4();});
- c.on('data',data=>{try{if(typeof window.onCollabV4Data==='function'&&window.onCollabV4Data(data)!==false)return;if(typeof window.receiveShared==='function')window.receiveShared(data)}catch{}});
- c.on('close',()=>{if(roomButton){roomButton.textContent='Связь потеряна';roomButton.classList.remove('live');}msg('Связь потеряна. Создайте комнату заново.',true);});
- c.on('error',e=>msg(errText(e),true));
-}
-function attachPeerErrors(p,onUnavailable){
- p.on('error',e=>{
-  if(e&&e.type==='unavailable-id'&&onUnavailable){onUnavailable();return;}
-  msg(errText(e),true);
- });
- p.on('disconnected',()=>{ if(!p.destroyed){try{p.reconnect()}catch{}} });
-}
-function createRoom(){
- cleanup(); retries++;
- code=String(Math.floor(100000+Math.random()*900000)); role='tutor';
- msg('Создаём комнату…');
- activePeer=makePeer('oge2627-'+code);
- let opened=false;
- const timer=setTimeout(()=>{if(!opened)msg('Сервер комнат не ответил за 10 секунд. Если ссылка открыта внутри Telegram/WhatsApp, откройте её в Safari или Chrome.',true)},10000);
- activePeer.on('open',()=>{opened=true;clearTimeout(timer);retries=0;msg(`<b>Код комнаты</b><div class="room-code">${code}</div>Отправьте этот код ученику и дождитесь подключения.`)});
- activePeer.on('connection',bind);
- attachPeerErrors(activePeer,()=>{if(retries<4)createRoom();else msg('Не удалось подобрать свободный код комнаты. Попробуйте ещё раз.',true)});
-}
-function joinRoom(){
- cleanup();
- code=joinInput.value.replace(/\D/g,'');
- if(code.length!==6){msg('Введите шестизначный код комнаты.',true);return;}
- role='student';msg('Подключаемся…');
- activePeer=makePeer();
- let opened=false;
- const timer=setTimeout(()=>{if(!opened)msg('Сервер комнат не ответил за 10 секунд. Откройте ссылку в Safari/Chrome и попробуйте снова.',true)},10000);
- activePeer.on('open',()=>{opened=true;clearTimeout(timer);const c=activePeer.connect('oge2627-'+code,{reliable:true,serialization:'json'});bind(c);setTimeout(()=>{if(!c.open)msg('Комната найдена не была или прямое соединение заблокировано сетью. Проверьте код; при мобильном интернете попробуйте Wi‑Fi.',true)},12000)});
- attachPeerErrors(activePeer);
-}
-
-createBtn.onclick=createRoom;
-joinBtn.onclick=joinRoom;
+Object.defineProperties(bridge,{role:{get:()=>role},connected:{get:()=>!!(activeConn&&activeConn.readyState===WebSocket.OPEN)},code:{get:()=>code}});
+bridge.send=data=>{if(bridge.connected)activeConn.send(JSON.stringify(data))};
+function msg(text,bad=false){roomResult.innerHTML=`<div class="room-status"${bad?' style="background:#faecea"':''}>${text}</div>`}
+function cleanup(){if(activeConn){try{activeConn.close()}catch{}}activeConn=null;opened=false}
+function setConnected(){opened=true;if(roomButton){roomButton.textContent=role==='tutor'?'● Комната '+code:'● На занятии';roomButton.classList.add('live')}msg(`Соединение с сервером установлено. ${role==='tutor'?'Отправьте код ученику и выберите задание.':'Ждите, пока репетитор выберет задание.'}`)}
+function connect(nextRole,nextCode){cleanup();role=nextRole;code=nextCode;msg('Подключаемся к комнате…');const ws=activeConn=new WebSocket(`${SERVER}/room/${code}?role=${role}`);const timer=setTimeout(()=>{if(!opened){try{ws.close()}catch{}msg('Сервер комнат не ответил. Проверьте интернет и повторите попытку.',true)}},12000);ws.onopen=()=>{clearTimeout(timer);setConnected();if(role==='tutor'&&typeof window.shareCollabV4==='function')window.shareCollabV4()};ws.onmessage=ev=>{let data;try{data=JSON.parse(ev.data)}catch{return}if(data.type==='presence'){if(role==='tutor')msg(`<b>Код комнаты</b><div class="room-code">${code}</div>${data.student?'Ученик подключён. Можно начинать.':'Отправьте код ученику и дождитесь подключения.'}`);return}if(typeof window.onCollabV4Data==='function'&&window.onCollabV4Data(data)!==false)return;if(typeof window.receiveShared==='function')window.receiveShared(data)};ws.onerror=()=>msg('Ошибка сервера комнат. Повторите подключение.',true);ws.onclose=()=>{clearTimeout(timer);if(opened){opened=false;if(roomButton){roomButton.textContent='Связь потеряна';roomButton.classList.remove('live')}msg('Связь потеряна. Подключитесь к комнате заново.',true)}}}
+createBtn.onclick=()=>connect('tutor',String(Math.floor(100000+Math.random()*900000)));
+joinBtn.onclick=()=>{const next=joinInput.value.replace(/\D/g,'');if(next.length!==6){msg('Введите шестизначный код комнаты.',true);return}connect('student',next)};
 window.addEventListener('pagehide',cleanup,{once:true});
 })();
