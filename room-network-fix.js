@@ -14,6 +14,9 @@ let activeConn=null;
 let role=null;
 let code='';
 let retries=0;
+const bridge=window.collabBridge=window.collabBridge||{};
+Object.defineProperties(bridge,{role:{get:()=>role},connected:{get:()=>!!(activeConn&&activeConn.open)},code:{get:()=>code}});
+bridge.send=data=>{if(activeConn&&activeConn.open)activeConn.send(data)};
 
 function msg(text,bad=false){roomResult.innerHTML=`<div class="room-status"${bad?' style="background:#faecea"':''}>${text}</div>`;}
 function errText(e){
@@ -45,8 +48,8 @@ function setConnected(){
 }
 function bind(c){
  activeConn=c;
- c.on('open',()=>{setConnected(); if(role==='tutor'&&window.state&&state.sub)c.send({type:'state',sub:state.sub,i:state.i});});
- c.on('data',data=>{try{if(typeof window.receiveShared==='function')window.receiveShared(data)}catch{}});
+ c.on('open',()=>{setConnected();if(role==='tutor'&&typeof window.shareCollabV4==='function')window.shareCollabV4();});
+ c.on('data',data=>{try{if(typeof window.onCollabV4Data==='function'&&window.onCollabV4Data(data)!==false)return;if(typeof window.receiveShared==='function')window.receiveShared(data)}catch{}});
  c.on('close',()=>{if(roomButton){roomButton.textContent='Связь потеряна';roomButton.classList.remove('live');}msg('Связь потеряна. Создайте комнату заново.',true);});
  c.on('error',e=>msg(errText(e),true));
 }
