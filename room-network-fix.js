@@ -11,19 +11,20 @@ css.textContent=`
 .cw-wrap{padding:26px}.cw-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.cw-head h2{margin:4px 0 6px;font-size:clamp(25px,5vw,38px)}
 .cw-kicker{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:#187653;font-weight:800}.cw-close{border:0;border-radius:50%;width:42px;height:42px;font-size:24px;cursor:pointer}
 .cw-state{margin:18px 0;padding:14px 16px;border-radius:14px;background:#e8f6ef;color:#12603f;font-weight:700}.cw-state.wait{background:#fff4d7;color:#72520b}.cw-state.bad{background:#fae9e7;color:#8b2821}
+.cw-entry{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.cw-entry-card{border:1px solid #d8dfd9;border-radius:16px;padding:18px;background:#fff}.cw-entry-card h3{margin:0 0 8px;font-size:22px}.cw-entry-card p{margin:0 0 16px;color:#667269;font-size:13px;line-height:1.5}.cw-entry-card input{width:100%;border:1px solid #ccd6cf;border-radius:12px;padding:13px;text-align:center;letter-spacing:.18em;font-size:16px;font-weight:800;margin-bottom:10px}.cw-entry-card button{width:100%;border:0;border-radius:12px;padding:13px 18px;background:#187653;color:white;font-weight:800;cursor:pointer}
 .cw-code{font-size:30px;font-weight:900;letter-spacing:.25em;margin:8px 0 18px}.cw-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.cw-actions button,.cw-send{border:0;border-radius:12px;padding:13px 18px;background:#187653;color:white;font-weight:800;cursor:pointer}.cw-actions .secondary{background:#e8eee9;color:#183d2c}.cw-actions .leave{background:#fae9e7;color:#8b2821}
 .cw-log{height:210px;overflow:auto;border:1px solid #d8dfd9;border-radius:15px;padding:12px;background:#fafbf8}.cw-msg{margin:7px 0;padding:9px 11px;border-radius:11px;background:#eef2ee}.cw-msg.mine{background:#dff3e8;margin-left:30px}.cw-msg.system{background:#fff4d7;color:#62490e;text-align:center;font-size:14px}
 .cw-compose{display:flex;gap:8px;margin-top:10px}.cw-compose input{min-width:0;flex:1;border:1px solid #ccd6cf;border-radius:12px;padding:13px;font-size:16px}
 .cw-review{margin:12px 0;padding:14px;border:1px solid #cddbd2;border-radius:14px;background:#f4f8f5}.cw-review b,.cw-review span{display:block}.cw-review span{margin:8px 0;white-space:pre-wrap}.cw-review-actions{display:flex;gap:8px}.cw-review-actions button{border:0;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer}.cw-ok{background:#187653;color:#fff}.cw-rework{background:#fae9e7;color:#8b2821}
-@media(max-width:520px){.cw-wrap{padding:20px}.cw-log{height:180px}.cw-compose{flex-direction:column}.cw-send{width:100%}}
+@media(max-width:520px){#collabWorkspace{width:calc(100% - 16px);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px)}.cw-wrap{padding:20px}.cw-entry{grid-template-columns:1fr}.cw-entry-card h3{font-size:20px}.cw-actions{display:grid}.cw-actions button{width:100%}.cw-log{height:180px}.cw-compose{flex-direction:column}.cw-send{width:100%}}
 `;
 d.head.append(css);
 
 const panel=d.createElement('dialog');
 panel.id='collabWorkspace';
-panel.innerHTML=`<div class="cw-wrap"><div class="cw-head"><div><div class="cw-kicker">Совместное занятие</div><h2>Комната занятия</h2><div id="cwRole"></div></div><button class="cw-close" type="button" aria-label="Закрыть">×</button></div><div id="cwState" class="cw-state wait">Подключаемся…</div><div id="cwReview" class="cw-review" hidden><b>Ответ ученика</b><span id="cwAnswer"></span><div class="cw-review-actions"><button id="cwCorrect" class="cw-ok" type="button">Зачесть</button><button id="cwRework" class="cw-rework" type="button">Отправить на доработку</button></div></div><div id="cwCodeBox" hidden>Код для ученика<div id="cwCode" class="cw-code"></div></div><div class="cw-actions"><button id="cwChoose" type="button">Выбрать задание</button><button id="cwCopy" class="secondary" type="button">Скопировать код</button><button id="cwLeave" class="leave" type="button">Выйти из комнаты</button></div><div id="cwLog" class="cw-log" aria-live="polite"></div><form id="cwForm" class="cw-compose"><input id="cwInput" maxlength="500" placeholder="Напишите сообщение…" autocomplete="off"><button class="cw-send" type="submit">Отправить</button></form></div>`;
+panel.innerHTML=`<div class="cw-wrap"><div class="cw-head"><div><div class="cw-kicker">Совместное занятие</div><h2>Комната занятия</h2><div id="cwRole"></div></div><button class="cw-close" type="button" aria-label="Закрыть">×</button></div><div id="cwState" class="cw-state wait">Создайте комнату или введите код ученика.</div><div id="cwEntry" class="cw-entry"><section class="cw-entry-card"><h3>Я репетитор</h3><p>Создайте комнату, отправьте ученику код и выбирайте задания.</p><button id="cwCreateRoom" type="button">Создать комнату</button></section><section class="cw-entry-card"><h3>Я ученик</h3><p>Введите шестизначный код, который прислал репетитор.</p><input id="cwJoinCode" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="Код комнаты"><button id="cwJoinRoom" type="button">Подключиться</button></section></div><div id="cwReview" class="cw-review" hidden><b>Ответ ученика</b><span id="cwAnswer"></span><div class="cw-review-actions"><button id="cwCorrect" class="cw-ok" type="button">Зачесть</button><button id="cwRework" class="cw-rework" type="button">Отправить на доработку</button></div></div><div id="cwCodeBox" hidden>Код для ученика<div id="cwCode" class="cw-code"></div></div><div id="cwActions" class="cw-actions" hidden><button id="cwChoose" type="button">Выбрать задание</button><button id="cwCopy" class="secondary" type="button">Скопировать код</button><button id="cwLeave" class="leave" type="button">Выйти из комнаты</button></div><div id="cwLog" class="cw-log" aria-live="polite" hidden></div><form id="cwForm" class="cw-compose" hidden><input id="cwInput" maxlength="500" placeholder="Напишите сообщение…" autocomplete="off"><button class="cw-send" type="submit">Отправить</button></form></div>`;
 d.body.append(panel);
-const stateEl=panel.querySelector('#cwState'),roleEl=panel.querySelector('#cwRole'),codeBox=panel.querySelector('#cwCodeBox'),codeEl=panel.querySelector('#cwCode'),chooseBtn=panel.querySelector('#cwChoose'),copyBtn=panel.querySelector('#cwCopy'),reviewBox=panel.querySelector('#cwReview'),answerEl=panel.querySelector('#cwAnswer'),log=panel.querySelector('#cwLog'),input=panel.querySelector('#cwInput');
+const stateEl=panel.querySelector('#cwState'),roleEl=panel.querySelector('#cwRole'),entryEl=panel.querySelector('#cwEntry'),codeBox=panel.querySelector('#cwCodeBox'),codeEl=panel.querySelector('#cwCode'),chooseBtn=panel.querySelector('#cwChoose'),copyBtn=panel.querySelector('#cwCopy'),actionsEl=panel.querySelector('#cwActions'),reviewBox=panel.querySelector('#cwReview'),answerEl=panel.querySelector('#cwAnswer'),log=panel.querySelector('#cwLog'),form=panel.querySelector('#cwForm'),input=panel.querySelector('#cwInput'),entryCreateBtn=panel.querySelector('#cwCreateRoom'),entryJoinBtn=panel.querySelector('#cwJoinRoom'),entryJoinInput=panel.querySelector('#cwJoinCode');
 panel.querySelector('.cw-close').onclick=()=>panel.close();
 
 let socket=null,role='',code='',opened=false,retries=0,reconnectTimer=0,leaving=false,roomEnded=false,studentSeen=false,lastSubmission=null;
@@ -33,18 +34,28 @@ bridge.send=data=>{if(bridge.connected)socket.send(JSON.stringify(data))};
 
 function status(text,bad=false){result.innerHTML=`<div class="room-status"${bad?' style="background:#faecea"':''}>${text}</div>`}
 function panelState(text,kind=''){stateEl.textContent=text;stateEl.className='cw-state '+kind}
+function syncLegacyRole(){try{if(typeof collabRole!=='undefined')collabRole=role||null}catch{}}
 function addMessage(who,text,kind=''){
   const item=d.createElement('div');item.className='cw-msg '+kind;item.textContent=who?`${who}: ${text}`:text;log.append(item);log.scrollTop=log.scrollHeight;
 }
 function showPanel(){
-  roleEl.textContent=role==='tutor'?'Вы вошли как репетитор':'Вы вошли как ученик';
-  codeBox.hidden=role!=='tutor';chooseBtn.hidden=role!=='tutor';copyBtn.hidden=role!=='tutor';codeEl.textContent=code;
+  const active=!!(role&&code);
+  roleEl.textContent=active?(role==='tutor'?'Вы вошли как репетитор':'Вы вошли как ученик'):'Выберите роль для совместного занятия';
+  entryEl.hidden=active;
+  codeBox.hidden=!active||role!=='tutor';
+  chooseBtn.hidden=!active||role!=='tutor';
+  copyBtn.hidden=!active||role!=='tutor';
+  actionsEl.hidden=!active;
+  log.hidden=!active;
+  form.hidden=!active;
+  if(!active){reviewBox.hidden=true;panelState('Создайте комнату или введите код ученика.','wait')}
+  codeEl.textContent=code;
   if(roomDialog&&roomDialog.open)roomDialog.close();
   if(!panel.open)panel.showModal();
 }
 function closeSocket(){clearTimeout(reconnectTimer);if(socket){socket.onclose=null;try{socket.close()}catch{}}socket=null}
 function connected(isRetry){
-  opened=true;retries=0;
+  opened=true;retries=0;syncLegacyRole();
   if(roomButton){roomButton.textContent=role==='tutor'?`● Комната ${code}`:'● На занятии';roomButton.classList.add('live')}
   const text=role==='tutor'?'Вход выполнен. Отправьте код ученику.':'Вход выполнен. Ждите задание репетитора.';
   status(text);panelState(text,role==='tutor'&&!studentSeen?'wait':'');showPanel();
@@ -52,7 +63,7 @@ function connected(isRetry){
   if(role==='tutor'&&typeof window.shareCollabV4==='function')window.shareCollabV4();
 }
 function connect(nextRole,nextCode,isRetry=false){
-  closeSocket();role=nextRole;code=nextCode;opened=false;roomEnded=false;
+  closeSocket();role=nextRole;code=nextCode;opened=false;roomEnded=false;syncLegacyRole();
   if(!isRetry){studentSeen=false;log.replaceChildren();status('Подключаемся к комнате…');panelState('Подключаемся…','wait');showPanel()}
   const ws=socket=new WebSocket(`${SERVER}/room/${code}?role=${role}`);
   const timer=setTimeout(()=>{if(ws===socket&&!opened)try{ws.close()}catch{}},12000);
@@ -71,7 +82,7 @@ function connect(nextRole,nextCode,isRetry=false){
     if(data.type==='v4-chat'){addMessage(data.from==='tutor'?'Репетитор':'Ученик',String(data.text||''));return}
     if(data.type==='room-ended'){
       roomEnded=true;opened=false;closeSocket();panelState('Репетитор завершил комнату.','bad');status('Занятие завершено репетитором.',true);addMessage('','Комната закрыта.','system');
-      if(roomButton){roomButton.textContent='Учимся вместе';roomButton.classList.remove('live')}roleEl.textContent='Занятие завершено';role='';code='';if(!panel.open)panel.showModal();return;
+      if(roomButton){roomButton.textContent='Учимся вместе';roomButton.classList.remove('live')}roleEl.textContent='Занятие завершено';role='';code='';syncLegacyRole();if(!panel.open)panel.showModal();return;
     }
     if(data.type==='v4-draft'&&role==='tutor'){panelState(data.active?'Ученик отвечает…':'Ученик остановил ввод.','wait');return}
     if(data.type==='v4-submission'&&role==='tutor'){
@@ -90,20 +101,26 @@ function connect(nextRole,nextCode,isRetry=false){
     const delay=Math.min(1000*(2**Math.min(retries++,3)),8000);reconnectTimer=setTimeout(()=>connect(role,code,true),delay);
   };
 }
+function createRoom(){connect('tutor',String(Math.floor(100000+Math.random()*900000)))}
+function joinRoom(){const next=(entryJoinInput.value||joinInput.value).replace(/\D/g,'');if(next.length!==6){status('Введите шестизначный код комнаты.',true);showPanel();return}entryJoinInput.value=next;joinInput.value=next;connect('student',next)}
 
 panel.querySelector('#cwChoose').onclick=()=>{panel.close();const target=d.querySelector('#subjects')||d.querySelector('.subjects')||d.body;target.scrollIntoView({behavior:'smooth',block:'start'})};
 panel.querySelector('#cwCopy').onclick=async()=>{try{await navigator.clipboard.writeText(code);addMessage('','Код скопирован.','system')}catch{addMessage('','Код комнаты: '+code,'system')}};
 panel.querySelector('#cwCorrect').onclick=()=>{if(!lastSubmission)return;bridge.send({type:'v4-review',id:lastSubmission.id,accepted:true});reviewBox.hidden=true;panelState('Ответ зачтён. Можно дать следующее задание.');addMessage('','Ответ ученика зачтён.','system')};
 panel.querySelector('#cwRework').onclick=()=>{if(!lastSubmission)return;bridge.send({type:'v4-review',id:lastSubmission.id,accepted:false});reviewBox.hidden=true;panelState('Ответ возвращён ученику на доработку.','wait');addMessage('','Ответ возвращён на доработку.','system')};
 panel.querySelector('#cwLeave').onclick=()=>{
-  leaving=true;roomEnded=true;closeSocket();role='';code='';opened=false;studentSeen=false;lastSubmission=null;reviewBox.hidden=true;
+  leaving=true;roomEnded=true;closeSocket();role='';code='';opened=false;studentSeen=false;lastSubmission=null;reviewBox.hidden=true;syncLegacyRole();
   if(roomButton){roomButton.textContent='Учимся вместе';roomButton.classList.remove('live')}
   status('Вы вышли из комнаты. Можно создать новую комнату или подключиться снова.');
   panel.close();leaving=false;
 };
 panel.querySelector('#cwForm').onsubmit=e=>{e.preventDefault();const text=input.value.trim();if(!text||!bridge.connected)return;bridge.send({type:'v4-chat',from:role,text});addMessage(role==='tutor'?'Репетитор':'Ученик',text,'mine');input.value=''};
-createBtn.onclick=()=>connect('tutor',String(Math.floor(100000+Math.random()*900000)));
-joinBtn.onclick=()=>{const next=joinInput.value.replace(/\D/g,'');if(next.length!==6){status('Введите шестизначный код комнаты.',true);return}connect('student',next)};
-if(roomButton)roomButton.onclick=()=>{if(role&&code)showPanel();else if(roomDialog&&!roomDialog.open)roomDialog.showModal()};
+entryCreateBtn.onclick=createRoom;
+entryJoinBtn.onclick=joinRoom;
+entryJoinInput.oninput=()=>{entryJoinInput.value=entryJoinInput.value.replace(/\D/g,'').slice(0,6);joinInput.value=entryJoinInput.value};
+createBtn.onclick=createRoom;
+joinBtn.onclick=joinRoom;
+joinInput.oninput=()=>{joinInput.value=joinInput.value.replace(/\D/g,'').slice(0,6);entryJoinInput.value=joinInput.value};
+if(roomButton)roomButton.onclick=()=>showPanel();
 window.addEventListener('pagehide',()=>{leaving=true;closeSocket()},{once:true});
 })();
