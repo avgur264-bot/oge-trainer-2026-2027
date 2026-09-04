@@ -21,6 +21,7 @@ for(const [sub,total] of Object.entries(EXPECTED)){
    if(!norm(q.q))issue('errors',sub,q,'Пустой текст задания');
    if(!q.topic)issue('warnings',sub,q,'Не указана тема');
    if(!q.source)issue('warnings',sub,q,'Не указан источник/статус задания');
+   if(/текст\w* преподавателя|выданному тексту/i.test(norm(q.q))&&!q.passage)issue('errors',sub,q,'Задание ссылается на отсутствующий внешний текст');
    if(/author-base|artificial|generic|10x/i.test(String(q.source||'')+' '+String(q.quality||'')+' '+String(q.id||'')))issue('errors',sub,q,'Искусственный или устаревший вопрос запрещён в рабочем банке');
    const tp=typeOf(q);
    if(tp==='choice'){
