@@ -11,7 +11,7 @@ css.textContent=`
 .cw-wrap{padding:26px}.cw-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px}.cw-head h2{margin:4px 0 6px;font-size:clamp(25px,5vw,38px)}
 .cw-kicker{font-size:12px;letter-spacing:.13em;text-transform:uppercase;color:#187653;font-weight:800}.cw-close{border:0;border-radius:50%;width:42px;height:42px;font-size:24px;cursor:pointer}
 .cw-state{margin:18px 0;padding:14px 16px;border-radius:14px;background:#e8f6ef;color:#12603f;font-weight:700}.cw-state.wait{background:#fff4d7;color:#72520b}.cw-state.bad{background:#fae9e7;color:#8b2821}
-.cw-code{font-size:30px;font-weight:900;letter-spacing:.25em;margin:8px 0 18px}.cw-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.cw-actions button,.cw-send{border:0;border-radius:12px;padding:13px 18px;background:#187653;color:white;font-weight:800;cursor:pointer}.cw-actions .secondary{background:#e8eee9;color:#183d2c}
+.cw-code{font-size:30px;font-weight:900;letter-spacing:.25em;margin:8px 0 18px}.cw-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.cw-actions button,.cw-send{border:0;border-radius:12px;padding:13px 18px;background:#187653;color:white;font-weight:800;cursor:pointer}.cw-actions .secondary{background:#e8eee9;color:#183d2c}.cw-actions .leave{background:#fae9e7;color:#8b2821}
 .cw-log{height:210px;overflow:auto;border:1px solid #d8dfd9;border-radius:15px;padding:12px;background:#fafbf8}.cw-msg{margin:7px 0;padding:9px 11px;border-radius:11px;background:#eef2ee}.cw-msg.mine{background:#dff3e8;margin-left:30px}.cw-msg.system{background:#fff4d7;color:#62490e;text-align:center;font-size:14px}
 .cw-compose{display:flex;gap:8px;margin-top:10px}.cw-compose input{min-width:0;flex:1;border:1px solid #ccd6cf;border-radius:12px;padding:13px;font-size:16px}
 @media(max-width:520px){.cw-wrap{padding:20px}.cw-log{height:180px}.cw-compose{flex-direction:column}.cw-send{width:100%}}
@@ -20,9 +20,9 @@ d.head.append(css);
 
 const panel=d.createElement('dialog');
 panel.id='collabWorkspace';
-panel.innerHTML=`<div class="cw-wrap"><div class="cw-head"><div><div class="cw-kicker">Совместное занятие</div><h2>Комната занятия</h2><div id="cwRole"></div></div><button class="cw-close" type="button" aria-label="Закрыть">×</button></div><div id="cwState" class="cw-state wait">Подключаемся…</div><div id="cwCodeBox" hidden>Код для ученика<div id="cwCode" class="cw-code"></div></div><div id="cwTutorActions" class="cw-actions" hidden><button id="cwChoose" type="button">Выбрать задание</button><button id="cwCopy" class="secondary" type="button">Скопировать код</button></div><div id="cwLog" class="cw-log" aria-live="polite"></div><form id="cwForm" class="cw-compose"><input id="cwInput" maxlength="500" placeholder="Напишите сообщение…" autocomplete="off"><button class="cw-send" type="submit">Отправить</button></form></div>`;
+panel.innerHTML=`<div class="cw-wrap"><div class="cw-head"><div><div class="cw-kicker">Совместное занятие</div><h2>Комната занятия</h2><div id="cwRole"></div></div><button class="cw-close" type="button" aria-label="Закрыть">×</button></div><div id="cwState" class="cw-state wait">Подключаемся…</div><div id="cwCodeBox" hidden>Код для ученика<div id="cwCode" class="cw-code"></div></div><div class="cw-actions"><button id="cwChoose" type="button">Выбрать задание</button><button id="cwCopy" class="secondary" type="button">Скопировать код</button><button id="cwLeave" class="leave" type="button">Выйти из комнаты</button></div><div id="cwLog" class="cw-log" aria-live="polite"></div><form id="cwForm" class="cw-compose"><input id="cwInput" maxlength="500" placeholder="Напишите сообщение…" autocomplete="off"><button class="cw-send" type="submit">Отправить</button></form></div>`;
 d.body.append(panel);
-const stateEl=panel.querySelector('#cwState'),roleEl=panel.querySelector('#cwRole'),codeBox=panel.querySelector('#cwCodeBox'),codeEl=panel.querySelector('#cwCode'),actions=panel.querySelector('#cwTutorActions'),log=panel.querySelector('#cwLog'),input=panel.querySelector('#cwInput');
+const stateEl=panel.querySelector('#cwState'),roleEl=panel.querySelector('#cwRole'),codeBox=panel.querySelector('#cwCodeBox'),codeEl=panel.querySelector('#cwCode'),chooseBtn=panel.querySelector('#cwChoose'),copyBtn=panel.querySelector('#cwCopy'),log=panel.querySelector('#cwLog'),input=panel.querySelector('#cwInput');
 panel.querySelector('.cw-close').onclick=()=>panel.close();
 
 let socket=null,role='',code='',opened=false,retries=0,reconnectTimer=0,leaving=false,studentSeen=false;
@@ -37,7 +37,7 @@ function addMessage(who,text,kind=''){
 }
 function showPanel(){
   roleEl.textContent=role==='tutor'?'Вы вошли как репетитор':'Вы вошли как ученик';
-  codeBox.hidden=role!=='tutor';actions.hidden=role!=='tutor';codeEl.textContent=code;
+  codeBox.hidden=role!=='tutor';chooseBtn.hidden=role!=='tutor';copyBtn.hidden=role!=='tutor';codeEl.textContent=code;
   if(roomDialog&&roomDialog.open)roomDialog.close();
   if(!panel.open)panel.showModal();
 }
@@ -83,6 +83,12 @@ function connect(nextRole,nextCode,isRetry=false){
 
 panel.querySelector('#cwChoose').onclick=()=>{panel.close();const target=d.querySelector('#subjects')||d.querySelector('.subjects')||d.body;target.scrollIntoView({behavior:'smooth',block:'start'})};
 panel.querySelector('#cwCopy').onclick=async()=>{try{await navigator.clipboard.writeText(code);addMessage('','Код скопирован.','system')}catch{addMessage('','Код комнаты: '+code,'system')}};
+panel.querySelector('#cwLeave').onclick=()=>{
+  leaving=true;closeSocket();role='';code='';opened=false;studentSeen=false;
+  if(roomButton){roomButton.textContent='Учимся вместе';roomButton.classList.remove('live')}
+  status('Вы вышли из комнаты. Можно создать новую комнату или подключиться снова.');
+  panel.close();leaving=false;
+};
 panel.querySelector('#cwForm').onsubmit=e=>{e.preventDefault();const text=input.value.trim();if(!text||!bridge.connected)return;bridge.send({type:'v4-chat',from:role,text});addMessage(role==='tutor'?'Репетитор':'Ученик',text,'mine');input.value=''};
 createBtn.onclick=()=>connect('tutor',String(Math.floor(100000+Math.random()*900000)));
 joinBtn.onclick=()=>{const next=joinInput.value.replace(/\D/g,'');if(next.length!==6){status('Введите шестизначный код комнаты.',true);return}connect('student',next)};
