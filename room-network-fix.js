@@ -14,18 +14,19 @@ css.textContent=`
 .cw-code{font-size:30px;font-weight:900;letter-spacing:.25em;margin:8px 0 18px}.cw-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.cw-actions button,.cw-send{border:0;border-radius:12px;padding:13px 18px;background:#187653;color:white;font-weight:800;cursor:pointer}.cw-actions .secondary{background:#e8eee9;color:#183d2c}.cw-actions .leave{background:#fae9e7;color:#8b2821}
 .cw-log{height:210px;overflow:auto;border:1px solid #d8dfd9;border-radius:15px;padding:12px;background:#fafbf8}.cw-msg{margin:7px 0;padding:9px 11px;border-radius:11px;background:#eef2ee}.cw-msg.mine{background:#dff3e8;margin-left:30px}.cw-msg.system{background:#fff4d7;color:#62490e;text-align:center;font-size:14px}
 .cw-compose{display:flex;gap:8px;margin-top:10px}.cw-compose input{min-width:0;flex:1;border:1px solid #ccd6cf;border-radius:12px;padding:13px;font-size:16px}
+.cw-review{margin:12px 0;padding:14px;border:1px solid #cddbd2;border-radius:14px;background:#f4f8f5}.cw-review b,.cw-review span{display:block}.cw-review span{margin:8px 0;white-space:pre-wrap}.cw-review-actions{display:flex;gap:8px}.cw-review-actions button{border:0;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer}.cw-ok{background:#187653;color:#fff}.cw-rework{background:#fae9e7;color:#8b2821}
 @media(max-width:520px){.cw-wrap{padding:20px}.cw-log{height:180px}.cw-compose{flex-direction:column}.cw-send{width:100%}}
 `;
 d.head.append(css);
 
 const panel=d.createElement('dialog');
 panel.id='collabWorkspace';
-panel.innerHTML=`<div class="cw-wrap"><div class="cw-head"><div><div class="cw-kicker">Совместное занятие</div><h2>Комната занятия</h2><div id="cwRole"></div></div><button class="cw-close" type="button" aria-label="Закрыть">×</button></div><div id="cwState" class="cw-state wait">Подключаемся…</div><div id="cwCodeBox" hidden>Код для ученика<div id="cwCode" class="cw-code"></div></div><div class="cw-actions"><button id="cwChoose" type="button">Выбрать задание</button><button id="cwCopy" class="secondary" type="button">Скопировать код</button><button id="cwLeave" class="leave" type="button">Выйти из комнаты</button></div><div id="cwLog" class="cw-log" aria-live="polite"></div><form id="cwForm" class="cw-compose"><input id="cwInput" maxlength="500" placeholder="Напишите сообщение…" autocomplete="off"><button class="cw-send" type="submit">Отправить</button></form></div>`;
+panel.innerHTML=`<div class="cw-wrap"><div class="cw-head"><div><div class="cw-kicker">Совместное занятие</div><h2>Комната занятия</h2><div id="cwRole"></div></div><button class="cw-close" type="button" aria-label="Закрыть">×</button></div><div id="cwState" class="cw-state wait">Подключаемся…</div><div id="cwReview" class="cw-review" hidden><b>Ответ ученика</b><span id="cwAnswer"></span><div class="cw-review-actions"><button id="cwCorrect" class="cw-ok" type="button">Зачесть</button><button id="cwRework" class="cw-rework" type="button">Отправить на доработку</button></div></div><div id="cwCodeBox" hidden>Код для ученика<div id="cwCode" class="cw-code"></div></div><div class="cw-actions"><button id="cwChoose" type="button">Выбрать задание</button><button id="cwCopy" class="secondary" type="button">Скопировать код</button><button id="cwLeave" class="leave" type="button">Выйти из комнаты</button></div><div id="cwLog" class="cw-log" aria-live="polite"></div><form id="cwForm" class="cw-compose"><input id="cwInput" maxlength="500" placeholder="Напишите сообщение…" autocomplete="off"><button class="cw-send" type="submit">Отправить</button></form></div>`;
 d.body.append(panel);
-const stateEl=panel.querySelector('#cwState'),roleEl=panel.querySelector('#cwRole'),codeBox=panel.querySelector('#cwCodeBox'),codeEl=panel.querySelector('#cwCode'),chooseBtn=panel.querySelector('#cwChoose'),copyBtn=panel.querySelector('#cwCopy'),log=panel.querySelector('#cwLog'),input=panel.querySelector('#cwInput');
+const stateEl=panel.querySelector('#cwState'),roleEl=panel.querySelector('#cwRole'),codeBox=panel.querySelector('#cwCodeBox'),codeEl=panel.querySelector('#cwCode'),chooseBtn=panel.querySelector('#cwChoose'),copyBtn=panel.querySelector('#cwCopy'),reviewBox=panel.querySelector('#cwReview'),answerEl=panel.querySelector('#cwAnswer'),log=panel.querySelector('#cwLog'),input=panel.querySelector('#cwInput');
 panel.querySelector('.cw-close').onclick=()=>panel.close();
 
-let socket=null,role='',code='',opened=false,retries=0,reconnectTimer=0,leaving=false,studentSeen=false;
+let socket=null,role='',code='',opened=false,retries=0,reconnectTimer=0,leaving=false,roomEnded=false,studentSeen=false,lastSubmission=null;
 const bridge=window.collabBridge=window.collabBridge||{};
 Object.defineProperties(bridge,{role:{configurable:true,get:()=>role},connected:{configurable:true,get:()=>!!(socket&&socket.readyState===WebSocket.OPEN)},code:{configurable:true,get:()=>code}});
 bridge.send=data=>{if(bridge.connected)socket.send(JSON.stringify(data))};
@@ -51,7 +52,7 @@ function connected(isRetry){
   if(role==='tutor'&&typeof window.shareCollabV4==='function')window.shareCollabV4();
 }
 function connect(nextRole,nextCode,isRetry=false){
-  closeSocket();role=nextRole;code=nextCode;opened=false;
+  closeSocket();role=nextRole;code=nextCode;opened=false;roomEnded=false;
   if(!isRetry){studentSeen=false;log.replaceChildren();status('Подключаемся к комнате…');panelState('Подключаемся…','wait');showPanel()}
   const ws=socket=new WebSocket(`${SERVER}/room/${code}?role=${role}`);
   const timer=setTimeout(()=>{if(ws===socket&&!opened)try{ws.close()}catch{}},12000);
@@ -68,13 +69,22 @@ function connect(nextRole,nextCode,isRetry=false){
       return;
     }
     if(data.type==='v4-chat'){addMessage(data.from==='tutor'?'Репетитор':'Ученик',String(data.text||''));return}
+    if(data.type==='room-ended'){
+      roomEnded=true;opened=false;closeSocket();panelState('Репетитор завершил комнату.','bad');status('Занятие завершено репетитором.',true);addMessage('','Комната закрыта.','system');
+      if(roomButton){roomButton.textContent='Учимся вместе';roomButton.classList.remove('live')}roleEl.textContent='Занятие завершено';role='';code='';if(!panel.open)panel.showModal();return;
+    }
+    if(data.type==='v4-draft'&&role==='tutor'){panelState(data.active?'Ученик отвечает…':'Ученик остановил ввод.','wait');return}
+    if(data.type==='v4-submission'&&role==='tutor'){
+      lastSubmission=data;answerEl.textContent=data.answer||'Ответ отправлен без текста';reviewBox.hidden=false;panelState('Получен ответ ученика. Проверьте его.');showPanel();addMessage('','Ученик отправил ответ.','system');
+    }
+    if(data.type==='v4-review'&&role==='student'){panelState(data.accepted?'Ответ зачтён репетитором.':'Репетитор просит доработать ответ.',data.accepted?'':'wait');addMessage('',data.accepted?'Ответ зачтён.':'Ответ отправлен на доработку.','system')}
     if(data.type==='v4-state'&&role==='student'&&panel.open)panel.close();
     if(typeof window.onCollabV4Data==='function'&&window.onCollabV4Data(data)!==false)return;
     if(typeof window.receiveShared==='function')window.receiveShared(data);
   };
   ws.onerror=()=>{};
   ws.onclose=()=>{
-    clearTimeout(timer);if(ws!==socket||leaving)return;opened=false;
+    clearTimeout(timer);if(ws!==socket||leaving||roomEnded)return;opened=false;
     if(roomButton){roomButton.textContent='Восстанавливаем связь…';roomButton.classList.remove('live')}
     panelState('Связь прервалась. Переподключаемся автоматически…','bad');status('Восстанавливаем связь с комнатой…',true);
     const delay=Math.min(1000*(2**Math.min(retries++,3)),8000);reconnectTimer=setTimeout(()=>connect(role,code,true),delay);
@@ -83,8 +93,10 @@ function connect(nextRole,nextCode,isRetry=false){
 
 panel.querySelector('#cwChoose').onclick=()=>{panel.close();const target=d.querySelector('#subjects')||d.querySelector('.subjects')||d.body;target.scrollIntoView({behavior:'smooth',block:'start'})};
 panel.querySelector('#cwCopy').onclick=async()=>{try{await navigator.clipboard.writeText(code);addMessage('','Код скопирован.','system')}catch{addMessage('','Код комнаты: '+code,'system')}};
+panel.querySelector('#cwCorrect').onclick=()=>{if(!lastSubmission)return;bridge.send({type:'v4-review',id:lastSubmission.id,accepted:true});reviewBox.hidden=true;panelState('Ответ зачтён. Можно дать следующее задание.');addMessage('','Ответ ученика зачтён.','system')};
+panel.querySelector('#cwRework').onclick=()=>{if(!lastSubmission)return;bridge.send({type:'v4-review',id:lastSubmission.id,accepted:false});reviewBox.hidden=true;panelState('Ответ возвращён ученику на доработку.','wait');addMessage('','Ответ возвращён на доработку.','system')};
 panel.querySelector('#cwLeave').onclick=()=>{
-  leaving=true;closeSocket();role='';code='';opened=false;studentSeen=false;
+  leaving=true;roomEnded=true;closeSocket();role='';code='';opened=false;studentSeen=false;lastSubmission=null;reviewBox.hidden=true;
   if(roomButton){roomButton.textContent='Учимся вместе';roomButton.classList.remove('live')}
   status('Вы вышли из комнаты. Можно создать новую комнату или подключиться снова.');
   panel.close();leaving=false;
