@@ -10,7 +10,7 @@ export default {
   async fetch(request,env){
     if(request.method==='OPTIONS') return new Response(null,{headers:cors});
     const url=new URL(request.url);
-    if(url.pathname==='/health') return Response.json({ok:true,service:'oge-room-server',version:'20270904-1'},{headers:cors});
+    if(url.pathname==='/health') return Response.json({ok:true,service:'oge-room-server',version:'20270904-2'},{headers:cors});
     const m=url.pathname.match(/^\/room\/(\d{6})$/);
     if(!m) return new Response('Not found',{status:404,headers:cors});
     if(request.headers.get('Upgrade')!=='websocket') return new Response('WebSocket required',{status:426,headers:cors});
