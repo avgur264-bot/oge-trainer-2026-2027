@@ -10,7 +10,7 @@ export default {
   async fetch(request,env){
     if(request.method==='OPTIONS') return new Response(null,{headers:cors});
     const url=new URL(request.url);
-    if(url.pathname==='/health') return Response.json({ok:true,service:'oge-room-server',version:'20270904-2'},{headers:cors});
+    if(url.pathname==='/health') return Response.json({ok:true,service:'oge-room-server',version:'20270904-3'},{headers:cors});
     const m=url.pathname.match(/^\/room\/(\d{6})$/);
     if(!m) return new Response('Not found',{status:404,headers:cors});
     if(request.headers.get('Upgrade')!=='websocket') return new Response('WebSocket required',{status:426,headers:cors});
@@ -22,7 +22,7 @@ export default {
 };
 
 export class Room {
-  constructor(state){this.state=state;this.sessions=new Map();}
+  constructor(state){this.state=state;this.sessions=new Map();this.lastState=null;}
   async fetch(request){
     if(request.headers.get('Upgrade')!=='websocket') return new Response('WebSocket required',{status:426});
     const url=new URL(request.url);
@@ -34,11 +34,13 @@ export class Room {
     this.sessions.set(sid,{ws:server,role});
     server.send(JSON.stringify({type:'hello',role}));
     this.broadcast({type:'presence',tutor:this.count('tutor'),student:this.count('student')});
+    if(role==='student'&&this.lastState)server.send(JSON.stringify(this.lastState));
     server.addEventListener('message',ev=>{
       let data; try{data=JSON.parse(ev.data)}catch{return}
       if(!data||typeof data!=='object')return;
-      if(role==='student'&&data.type==='state')return;
-      if(role==='tutor'&&data.type==='answer')return;
+      if(role==='student'&&(data.type==='state'||data.type==='v4-state'))return;
+      if(role==='tutor'&&(data.type==='answer'||data.type==='v4-answer'))return;
+      if(role==='tutor'&&data.type==='v4-state')this.lastState=data;
       this.broadcast(data,sid);
     });
     const close=()=>{this.sessions.delete(sid);this.broadcast({type:'presence',tutor:this.count('tutor'),student:this.count('student')});};
