@@ -4,7 +4,7 @@ const PB=window.practiceBank||{};
 const EXPECTED={math:25,rus:13,history:23,social:20,physics:22,chemistry:23,informatics:16,biology:26,geography:30,literature:5,english:38,german:38,french:38,spanish:38,'ege-rus':27,'ege-math-base':21,'ege-math-profile':20,'ege-physics':26,'ege-chemistry':34,'ege-informatics':27,'ege-biology':28,'ege-history':22,'ege-geography':29,'ege-social':25,'ege-literature':11,'ege-english':42,'ege-german':42,'ege-french':42,'ege-spanish':42,'ege-chinese':32};
 const norm=s=>String(s??'').toLowerCase().replace(/<[^>]*>/g,' ').replace(/^\s*вариант\s*\d+[.:]?\s*/,'').replace(/\s+/g,' ').trim();
 const sem=s=>norm(s).replace(/\d+(?:[.,]\d+)?/g,'#').replace(/[₀-₉]+/g,'#').replace(/[«»"'()[\]{}:;,.!?—–-]/g,' ').replace(/\s+/g,' ').trim();
-const report={version:'round2-qa-1',checked:'2026-09-04',subjects:{},errors:[],warnings:[]};
+const report={version:'round2-qa-2',checked:'2026-09-04',subjects:{},errors:[],warnings:[]};
 const globalIds=new Map();
 function issue(level,sub,q,msg){const row={sub,task:q?.task??null,id:q?.id??null,msg};report[level].push(row);(q.qaIssues??=[]).push(msg)}
 function typeOf(q){if(q.type)return q.type;if(Array.isArray(q.opts)&&q.opts.length)return'choice';return'text'}
@@ -21,6 +21,7 @@ for(const [sub,total] of Object.entries(EXPECTED)){
    if(!norm(q.q))issue('errors',sub,q,'Пустой текст задания');
    if(!q.topic)issue('warnings',sub,q,'Не указана тема');
    if(!q.source)issue('warnings',sub,q,'Не указан источник/статус задания');
+   if(/author-base|artificial|generic|10x/i.test(String(q.source||'')+' '+String(q.quality||'')+' '+String(q.id||'')))issue('errors',sub,q,'Искусственный или устаревший вопрос запрещён в рабочем банке');
    const tp=typeOf(q);
    if(tp==='choice'){
      if(!Array.isArray(q.opts)||q.opts.length<2)issue('errors',sub,q,'Choice без вариантов ответа');
@@ -47,7 +48,7 @@ for(const [sub,total] of Object.entries(EXPECTED)){
  }
  report.subjects[sub]={expectedTasks:total,totalQuestions:items.length,missingTasks:missing,oneModelTasks:oneModel,exactDuplicateCount:exactDupes,semanticDuplicateCount:semanticDupes,tasks};
 }
-report.ok=report.errors.length===0&&Object.values(report.subjects).every(x=>x.missingTasks.length===0);
+report.ok=report.errors.length===0&&Object.values(report.subjects).every(x=>x.missingTasks.length===0&&x.oneModelTasks.length===0);
 window.bankQaRound2=report;
 console.groupCollapsed('[ОГЭ/ЕГЭ 2027] QA round 2');console.log(report);console.groupEnd();
 })();
