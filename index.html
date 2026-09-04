@@ -12,9 +12,9 @@
   <script>if(location.search||location.hash)history.replaceState(null,'',location.pathname);</script>
 </head>
 <body>
-  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270904-03"></iframe>
+  <iframe id="trainer" title="ОГЭ–ЕГЭ Навигатор 2027" src="oge-trainer-2026.html?v=20270904-04"></iframe>
   <script>
-    const BUILD='20270904-03';
+    const BUILD='20270904-04';
     const frame=document.getElementById('trainer');
     frame.addEventListener('load',()=>{
       const d=frame.contentDocument;
@@ -29,8 +29,10 @@
                   load('fipi-2027-corrections','fipi-2027-corrections.js',()=>{
                     load('bank-source-policy','bank-source-policy.js',()=>{
                       load('practice-bank-reviewed-2027-batch1','practice-bank-reviewed-2027-batch1.js',()=>{
-                        load('trainer-upgrade-v4','trainer-upgrade-v4.js',()=>{
-                          load('room-network-fix','room-network-fix.js');
+                        load('practice-bank-fipi-2027-changes-reviewed','practice-bank-fipi-2027-changes-reviewed.js',()=>{
+                          load('trainer-upgrade-v4','trainer-upgrade-v4.js',()=>{
+                            load('room-network-fix','room-network-fix.js');
+                          });
                         });
                       });
                     });
