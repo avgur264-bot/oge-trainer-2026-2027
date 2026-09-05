@@ -7,7 +7,7 @@ const byId={};
 for(const [s,a] of Object.entries(PB)){if(!Array.isArray(a))continue;for(const q of a)byId[s+'/'+q.id]=q}
 const report={version:'content-fixes-1',checked:'2026-09-05',applied:0,missing:[],stubsHidden:0,explanationsPrefixed:0};
 // Направления, пересобранные под КИМ‑2027 отдельными файлами: правки к их старым id больше не нужны.
-const REBUILT=new Set(['ege-math-base','ege-math-profile','ege-physics','ege-chemistry','ege-biology','ege-history','ege-geography','ege-literature','history','social']);
+const REBUILT=new Set(['math','ege-rus','ege-informatics','ege-math-base','ege-math-profile','ege-physics','ege-chemistry','ege-biology','ege-history','ege-geography','ege-literature','history','social']);
 const get=(s,id)=>byId[s+'/'+id];
 const fix=(s,id,patch)=>{const q=get(s,id);if(!q){if(!REBUILT.has(s))report.missing.push(s+'/'+id);return}Object.assign(q,patch);report.applied++};
 const alt=(s,id,...more)=>{const q=get(s,id);if(!q){if(!REBUILT.has(s))report.missing.push(s+'/'+id);return}const cur=Array.isArray(q.answers)?q.answers.slice():[];if(q.answer!==undefined&&q.answer!==null&&q.answer!=='')cur.unshift(q.answer);q.answers=[...new Set([...cur,...more])];if(q.answer===undefined||q.answer===null||q.answer==='')q.answer=q.answers[0];report.applied++};
