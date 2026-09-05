@@ -28,6 +28,17 @@ if(!prec)problems.push('reviewedBankPrecedence2027 не создан');
 if(!pol)problems.push('bankSourcePolicy2027 не создан');
 if(!v4)problems.push('bankAudit2027V4 не создан: trainer-upgrade-v4 не выполнился');
 if(qa){for(const e of qa.errors)problems.push(`QA: ${e.sub} №${e.task} ${e.id}: ${e.msg}`)}
+const fixes=g('window.bankContentFixes2027');
+if(!fixes)problems.push('bankContentFixes2027 не создан: bank-content-fixes не выполнился');
+else if(fixes.missing.length)problems.push('bank-content-fixes: не найдены задания '+fixes.missing.join(', '));
+// повторы формулировок, видимые заглушки, нерешаемые ключи
+const PBall=g('window.practiceBank');const normQ=s=>String(s??'').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+const seenQ=new Map();const stubRe=/прототип|Требуется оригинальн|тренировочного варианта|任务|根据(短文|语境|录音)/i;let longKeys=0,choiceFirst=0,choiceAll=0;
+for(const [sub,items] of Object.entries(PBall)){if(!Array.isArray(items))continue;for(const q of items){const k=normQ(q.q);if(k){if(seenQ.has(k))problems.push(`Повтор формулировки: ${sub}/${q.id} = ${seenQ.get(k)}`);else seenQ.set(k,sub+'/'+q.id)}
+ if(stubRe.test(q.q)&&!q.excludeFromFullExam)problems.push(`Заглушка видна пользователю: ${sub}/${q.id}`);
+ if(q.type==='choice'){choiceAll++;if(q.a===0)choiceFirst++}
+ if(q.type==='text'){const a=String(q.answer??(q.answers||[])[0]??'');if(a.split(/\s+/).length>5)longKeys++}}}
+console.log(`Исправлений контента применено: ${fixes?fixes.applied:0}, заглушек скрыто: ${fixes?fixes.stubsHidden:0}. Текстовых ключей длиннее 5 слов: ${longKeys}. Choice с ответом на первой позиции: ${choiceFirst}/${choiceAll} (варианты перемешиваются при показе).`);
 const kept=pol?Object.values(pol.kept).reduce((a,b)=>a+b,0):0;
 console.log(`Файлов в цепочке: ${files.length}. Заданий после политики источников: ${kept}.`);
 if(qa){let tot=0,one=0,miss=0;const rows=[];for(const [k,s] of Object.entries(qa.subjects)){tot+=s.totalQuestions;one+=s.oneModelTasks.length;miss+=s.missingTasks.length;if(s.missingTasks.length)rows.push(`  ${k}: нет номеров ${s.missingTasks.join(',')}`)}
