@@ -2,13 +2,17 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="pragma" content="no-cache">
   <meta http-equiv="expires" content="0">
   <title>ОГЭ–ЕГЭ Навигатор — тренажёр 2027</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=PT+Serif:ital,wght@0,700;1,400&display=swap">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=PT+Serif:ital,wght@0,700;1,400&display=swap');
+    /* Пока index.html подключает банки и движок v4, карточки предметов заблокированы: иначе пользователь попадает в старый циклический банк. */
+    body.bank-loading #subjects{pointer-events:none;opacity:.55}
+    body.bank-loading #subjects::before{content:'Загружаем банк заданий 2027…';grid-column:1/-1;display:block;padding:10px 14px;border-radius:12px;background:#fff4d7;color:#72520b;font-weight:700;font-size:13px}
     :root{--ink:#18231c;--muted:#667269;--paper:#f4f3ec;--card:#fffefa;--line:#d8ddd4;--green:#176b4d;--green2:#dceee5;--lime:#d9f26e;--yellow:#f7c84b;--red:#b6433b;--shadow:0 18px 50px rgba(29,48,35,.10)}
     *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:Manrope,system-ui,sans-serif} button,input{font:inherit}
     .app{min-height:100vh}.top{height:72px;padding:0 max(24px,calc((100% - 1180px)/2));display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);background:rgba(244,243,236,.92);position:sticky;top:0;z-index:5;backdrop-filter:blur(12px)}
@@ -24,7 +28,7 @@
     @media(max-width:850px){.hero{grid-template-columns:1fr}.subjects{grid-template-columns:1fr 1fr}.update{min-height:220px}}@media(max-width:560px){.topstat{display:none}.room-grid{grid-template-columns:1fr}.brand{font-size:13px}.top{padding:0 12px}.topright{gap:6px}main{padding:20px 14px 50px}.hero-main{padding:27px}.subjects{grid-template-columns:1fr}.toolbar{align-items:start;flex-direction:column}.notice{grid-template-columns:1fr}.modal{padding:20px}.qtext{font-size:19px}}
   </style>
 </head>
-<body><div class="app">
+<body class="bank-loading"><div class="app">
   <header class="top"><div class="brand"><span class="mark"></span>ОГЭ–ЕГЭ Навигатор <span class="year">2027</span></div><div class="topright"><div class="topstat" id="topstat">Решено: 0 · Верно: 0%</div><a class="guide-btn" href="instrukciya-repetitora-oge-ege-2027.pdf?v=20270903-3" target="_blank">PDF-инструкция</a><button class="room-btn" id="roomOpen">Совместно</button></div></header>
   <main>
     <section class="hero"><div class="hero-main"><div class="eyebrow">Подготовка без паники</div><h1>От ОГЭ до ЕГЭ — точно в цель.</h1><p>Все экзаменационные предметы 2027 года в одном тренажёре. Мгновенная проверка, понятные разборы, совместное занятие с репетитором и сохранение результата.</p></div>
@@ -38,7 +42,6 @@
 </div>
 <dialog id="quiz"><div class="modal" id="modal"></div></dialog>
 <dialog id="roomDialog"><div class="room"><div class="mhead"><div><div class="crumb">Совместное занятие</div><h2>Учимся вместе</h2></div><button class="close" id="roomClose" aria-label="Закрыть">×</button></div><p class="room-lead">Репетитор создаёт комнату и отправляет ученику шестизначный код. Оба должны оставить страницу открытой.<br><a href="instrukciya-repetitora-oge-ege-2027.pdf" target="_blank">Скачать PDF-инструкцию для репетитора →</a></p><div class="room-grid"><section class="room-card"><h3>Я репетитор</h3><p>Создайте комнату и управляйте заданиями.</p><button id="createRoom">Создать комнату</button></section><section class="room-card"><h3>Я ученик</h3><p>Введите код, который прислал репетитор.</p><input id="joinCode" inputmode="numeric" maxlength="6" placeholder="000000" aria-label="Код комнаты"><button id="joinRoom">Подключиться</button></section></div><div id="roomResult" aria-live="polite"></div><div class="peer-note">Связь проходит через защищённый сервер комнат Cloudflare. Аудио и видео не передаются.</div></div></dialog>
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js"></script>
 <script>
 const subjects=[
  {id:'math',exam:'oge',name:'Математика',icon:'∑',kind:'required',desc:'Алгебра, геометрия, вероятность и практические задачи',accent:'25 заданий'},
@@ -260,5 +263,6 @@ function check(){if(state.selected===null)return;let q=examBank[state.sub][state
 function next(){if(state.i<examBank[state.sub].length-1){state.i++;state.answered=false;state.selected=null;partnerAnswer=null;renderQ();shareState()}else finish()}
 function finish(){let total=examBank[state.sub].length,p=progress[state.sub]||{done:0,right:0};p.done+=total;p.right+=state.score;progress[state.sub]=p;save();let pct=Math.round(state.score/total*100),m=document.querySelector('#modal');m.innerHTML=`<div class="result"><div class="score">${state.score}/${total}</div><h2>${pct>=80?'Отличная работа!':pct>=60?'Хороший темп':'Есть что повторить'}</h2><p>${pct}% правильных ответов. Разборы уже показали, где подтянуть знания.</p><div class="actions" style="justify-content:center;gap:10px"><button class="option" id="again">Ещё раз</button><button class="next" style="display:block" id="done">К предметам</button></div></div>`;m.querySelector('#again').onclick=()=>start(state.sub);m.querySelector('#done').onclick=()=>document.querySelector('#quiz').close()}
 document.querySelector('#quiz').addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.close()});syncExamUI();updateTop();
+if(window===window.top)document.body.classList.remove('bank-loading');else setTimeout(()=>document.body.classList.remove('bank-loading'),25000);
 </script></body></html>
 

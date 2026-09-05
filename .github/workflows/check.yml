@@ -1,0 +1,26 @@
+name: check
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Синтаксис всех JS-файлов
+        run: |
+          set -e
+          for f in *.js worker/*.js scripts/*.mjs; do node --check "$f"; done
+      - name: BUILD совпадает в index.html
+        run: |
+          set -e
+          b=$(grep -o "BUILD='[^']*'" index.html | sed "s/BUILD='//;s/'//")
+          v=$(grep -o 'oge-trainer-2026.html?v=[^"]*' index.html | sed 's/.*?v=//')
+          echo "BUILD=$b iframe=$v"
+          test -n "$b" && test "$b" = "$v"
+      - name: Аудит банков заданий
+        run: node scripts/audit-banks.mjs

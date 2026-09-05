@@ -26,7 +26,7 @@ put('history',10,[
 
 // ОГЭ информатика — №9: схемы/графы и подсчёт путей.
 put('informatics',9,[
- Q('oge-inf-09-r1',9,'Анализ графов и схем','number','В ориентированном графе есть дуги A→B, A→C, B→D, C→D. Сколько различных путей из A в D?',{answer:'2',answers:['2'],ex:'Пути: A–B–D и A–C–D.',model:'path-count'}),
+ Q('oge-inf-09-b1',9,'Анализ графов и схем','number','В ориентированном графе есть дуги A→B, A→C, B→D, C→D. Сколько различных путей из A в D?',{answer:'2',answers:['2'],ex:'Пути: A–B–D и A–C–D.',model:'path-count'}),
  Q('oge-inf-09-r2',9,'Анализ графов и схем','number','Даны дуги A→B, A→C, B→C, B→D, C→D. Сколько различных путей из A в D?',{answer:'3',answers:['3'],ex:'A–B–D, A–C–D, A–B–C–D.',model:'path-count'})
 ]);
 

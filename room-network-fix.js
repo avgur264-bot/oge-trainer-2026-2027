@@ -16,7 +16,7 @@ css.textContent=`
 .cw-log{height:210px;overflow:auto;border:1px solid #d8dfd9;border-radius:15px;padding:12px;background:#fafbf8}.cw-msg{margin:7px 0;padding:9px 11px;border-radius:11px;background:#eef2ee;overflow-wrap:anywhere}.cw-msg.mine{background:#dff3e8;margin-left:30px}.cw-msg.system{background:#fff4d7;color:#62490e;text-align:center;font-size:14px}
 .cw-compose{display:flex;gap:8px;margin-top:10px}.cw-compose input{min-width:0;flex:1;border:1px solid #ccd6cf;border-radius:12px;padding:13px;font-size:16px}.cw-send{flex:0 0 auto}
 .cw-review{margin:12px 0;padding:14px;border:1px solid #cddbd2;border-radius:14px;background:#f4f8f5}.cw-review b,.cw-review span{display:block}.cw-review span{margin:8px 0;white-space:pre-wrap;overflow-wrap:anywhere}.cw-review-actions{display:flex;gap:8px}.cw-review-actions button{border:0;border-radius:10px;padding:10px 13px;font-weight:800;cursor:pointer}.cw-ok{background:#187653;color:#fff}.cw-rework{background:#fae9e7;color:#8b2821}
-@media(max-width:780px){#collabWorkspace{width:calc(100% - 20px);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}.cw-wrap{max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);padding-bottom:118px}.cw-actions{position:fixed;left:50%;right:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 10px);width:min(640px,calc(100% - 52px));transform:translateX(-50%);margin:0;padding:10px;border-radius:16px;box-shadow:0 -8px 26px rgba(255,253,248,.96),0 10px 30px rgba(7,27,18,.18)}}
+@media(max-width:780px){#collabWorkspace{width:calc(100% - 20px);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}.cw-wrap{max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px);padding-bottom:118px}.cw-actions{position:fixed;left:50%;right:auto;bottom:calc(var(--sab,env(safe-area-inset-bottom,0px)) + 10px);width:min(640px,calc(100% - 52px));transform:translateX(-50%);margin:0;padding:10px;border-radius:16px;box-shadow:0 -8px 26px rgba(255,253,248,.96),0 10px 30px rgba(7,27,18,.18)}}
 @media(max-width:520px){#collabWorkspace{width:calc(100% - 16px);max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);border-radius:20px}.cw-wrap{padding:18px 18px 118px;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px)}.cw-head{gap:10px}.cw-head h2{font-size:28px}.cw-entry{grid-template-columns:1fr}.cw-entry-card{padding:16px}.cw-entry-card h3{font-size:20px}.cw-actions{display:grid;width:calc(100% - 36px)}.cw-actions button{width:100%;min-height:48px}.cw-actions .leave{order:-1}.cw-code{font-size:28px}.cw-log{height:150px}.cw-compose{flex-direction:column}.cw-send{width:100%}.cw-review-actions{display:grid}}
 `;
 d.head.append(css);
@@ -82,7 +82,7 @@ function connect(nextRole,nextCode,isRetry=false){
       }
       return;
     }
-    if(data.type==='v4-chat'){addMessage(data.from==='tutor'?'Репетитор':'Ученик',String(data.text||''));return}
+    if(data.type==='v4-chat'){if(data.from===role)return;addMessage(data.from==='tutor'?'Репетитор':'Ученик',String(data.text||''));return}
     if(data.type==='room-ended'){
       roomEnded=true;opened=false;closeSocket();panelState('Репетитор завершил комнату.','bad');status('Занятие завершено репетитором.',true);addMessage('','Комната закрыта.','system');
       if(roomButton){roomButton.textContent='Учимся вместе';roomButton.classList.remove('live')}roleEl.textContent='Занятие завершено';role='';code='';syncLegacyRole();if(!panel.open)panel.showModal();return;
@@ -126,5 +126,8 @@ createBtn.onclick=createRoom;
 joinBtn.onclick=joinRoom;
 joinInput.oninput=()=>{joinInput.value=joinInput.value.replace(/\D/g,'').slice(0,6);entryJoinInput.value=joinInput.value};
 if(roomButton)roomButton.onclick=()=>showPanel();
+// Переключатель ОГЭ/ЕГЭ в базовом HTML открывает старый #roomDialog ученику. Перехватываем и показываем новую панель.
+d.querySelectorAll('.exam-button').forEach(b=>{const prev=b.onclick;b.onclick=function(e){if(role==='student'){if(roomDialog&&roomDialog.open)roomDialog.close();panelState('Экзамен и предмет выбирает репетитор.','wait');showPanel();return}return prev?prev.call(this,e):undefined}});
+if(roomDialog){const legacyShow=roomDialog.showModal.bind(roomDialog);roomDialog.showModal=()=>{if(role){panelState('Предмет выбирает репетитор. Дождитесь начала занятия.','wait');showPanel();return}legacyShow()}}
 window.addEventListener('pagehide',()=>{leaving=true;closeSocket()},{once:true});
 })();
