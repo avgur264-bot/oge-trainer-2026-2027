@@ -34,7 +34,7 @@ else if(fixes.missing.length)problems.push('bank-content-fixes: не найде�
 // повторы формулировок, видимые заглушки, нерешаемые ключи
 const PBall=g('window.practiceBank');const normQ=s=>String(s??'').toLowerCase().replace(/ё/g,'е').replace(/[^a-zа-я0-9 ]/g,' ').replace(/\s+/g,' ').trim();
 const seenQ=new Map();const stubRe=/прототип|Требуется оригинальн|тренировочного варианта|任务|根据(短文|语境|录音)/i;let longKeys=0,choiceFirst=0,choiceAll=0;
-for(const [sub,items] of Object.entries(PBall)){if(!Array.isArray(items))continue;for(const q of items){const k=normQ(q.q);if(k){if(seenQ.has(k))problems.push(`Повтор формулировки: ${sub}/${q.id} = ${seenQ.get(k)}`);else seenQ.set(k,sub+'/'+q.id)}
+for(const [sub,items] of Object.entries(PBall)){if(!Array.isArray(items))continue;for(const q of items){const k=normQ([q.q,...(q.left||[]),...(q.items||[]),...(q.opts||[]),q.passage||''].join(' '));if(k){if(seenQ.has(k))problems.push(`Повтор формулировки: ${sub}/${q.id} = ${seenQ.get(k)}`);else seenQ.set(k,sub+'/'+q.id)}
  if(stubRe.test(q.q)&&!q.excludeFromFullExam)problems.push(`Заглушка видна пользователю: ${sub}/${q.id}`);
  if(q.type==='choice'){choiceAll++;if(q.a===0)choiceFirst++}
  if(q.type==='text'){const a=String(q.answer??(q.answers||[])[0]??'');if(a.split(/\s+/).length>5)longKeys++}}}

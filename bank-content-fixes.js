@@ -6,9 +6,11 @@ const PB=window.practiceBank||{};
 const byId={};
 for(const [s,a] of Object.entries(PB)){if(!Array.isArray(a))continue;for(const q of a)byId[s+'/'+q.id]=q}
 const report={version:'content-fixes-1',checked:'2026-09-05',applied:0,missing:[],stubsHidden:0,explanationsPrefixed:0};
+// Направления, пересобранные под КИМ‑2027 отдельными файлами: правки к их старым id больше не нужны.
+const REBUILT=new Set(['ege-math-base','ege-math-profile','ege-physics','ege-chemistry','ege-biology','ege-history','ege-geography','ege-literature','history','social']);
 const get=(s,id)=>byId[s+'/'+id];
-const fix=(s,id,patch)=>{const q=get(s,id);if(!q){report.missing.push(s+'/'+id);return}Object.assign(q,patch);report.applied++};
-const alt=(s,id,...more)=>{const q=get(s,id);if(!q){report.missing.push(s+'/'+id);return}const cur=Array.isArray(q.answers)?q.answers.slice():[];if(q.answer!==undefined&&q.answer!==null&&q.answer!=='')cur.unshift(q.answer);q.answers=[...new Set([...cur,...more])];if(q.answer===undefined||q.answer===null||q.answer==='')q.answer=q.answers[0];report.applied++};
+const fix=(s,id,patch)=>{const q=get(s,id);if(!q){if(!REBUILT.has(s))report.missing.push(s+'/'+id);return}Object.assign(q,patch);report.applied++};
+const alt=(s,id,...more)=>{const q=get(s,id);if(!q){if(!REBUILT.has(s))report.missing.push(s+'/'+id);return}const cur=Array.isArray(q.answers)?q.answers.slice():[];if(q.answer!==undefined&&q.answer!==null&&q.answer!=='')cur.unshift(q.answer);q.answers=[...new Set([...cur,...more])];if(q.answer===undefined||q.answer===null||q.answer==='')q.answer=q.answers[0];report.applied++};
 
 // ---------- 1. Неверные и неоднозначные ключи ----------
 fix('ege-rus','r2-ege-rus-18',{answer:'2',ex:'Две запятые: вводное слово «конечно» и обращение «друзья» обособляются: «Конечно, друзья, мы встретимся снова».'});
@@ -38,7 +40,6 @@ fix('ege-chemistry','ege-chemistry-reviewed-08',{q:'Определите сте�
 fix('ege-informatics','ege-informatics-reviewed-21',{type:'choice',opts:['позиция, из которой любой ход ведёт в выигрышную позицию соперника','позиция, из которой есть ход в проигрышную позицию соперника','позиция, в которой игра уже закончена','позиция с чётным числом камней'],a:0,answer:undefined,answers:undefined,ex:'Проигрышная позиция: какой бы ход ни сделал игрок, соперник оказывается в выигрышной позиции.'});
 fix('ege-history','ege-history-reviewed-01',{q:'Расположите события в хронологическом порядке: 1) Куликовская битва; 2) отмена крепостного права; 3) Крещение Руси. Запишите последовательность цифр.',answer:'312',answers:['312','3 1 2','3,1,2'],ex:'Крещение Руси (988) → Куликовская битва (1380) → отмена крепостного права (1861): 312.'});
 alt('ege-history','ege-history-reviewed-07','воронихин','а н воронихин','андрей воронихин','андрей никифорович воронихин');
-fix('physics','oge-physics-r2-16',{type:'choice',opts:['сопротивление прямо пропорционально длине проводника','сопротивление не зависит от длины','сопротивление обратно пропорционально длине','сопротивление зависит только от материала'],a:0,answer:undefined,answers:undefined,ex:'Для проводника одного материала и сечения R=ρl/S: сопротивление растёт пропорционально длине.'});
 fix('biology','r2-biology-18',{type:'choice',opts:['малый круг начинается в правом желудочке и заканчивается в левом предсердии','малый круг начинается в левом желудочке','малый круг проходит через все органы тела','малый круг заканчивается в правом предсердии'],a:0,answer:undefined,answers:undefined,ex:'Малый круг: правый желудочек → лёгкие → левое предсердие. Большой круг начинается в левом желудочке.'});
 alt('biology','oge-bio-03-r1','царство, тип, род, вид');
 alt('biology','oge-bio-05-r1','гипотеза опыт наблюдение вывод','гипотеза, опыт, наблюдение, вывод');
@@ -50,7 +51,6 @@ alt('ege-geography','ege-geography-reviewed-13','широта','географи
 alt('ege-geography','ege-geography-reviewed-15','нефтяная','газовая промышленность','газовая','угольная промышленность','угольная','нефтедобыча','нефтедобывающая');
 alt('ege-literature','ege-literature-reviewed-09','тургенев','и с тургенев','иван тургенев','иван сергеевич тургенев');
 alt('ege-chemistry','ege-chemistry-reviewed-03','ковалентная полярная связь');
-alt('chemistry','oge-chem-r2-03','ковалентная полярная связь','полярная ковалентная');
 alt('geography','oge-geo-21-r1','екатеринбург','в екатеринбурге');
 alt('geography','oge-geo-02-r1','тихий');
 alt('geography','oge-geo-29-r1','баренцево');
@@ -66,7 +66,9 @@ fix('informatics','oge-inf-11-r1',{q:'В каталоге лежат текст�
 
 // ---------- 4. Заглушки ЕГЭ по языкам: скрыть из варианта и тренировок ----------
 const stubRe=/прототип|Требуется оригинальн|тренировочного варианта|任务|根据(短文|语境|录音)/i;
-for(const s of ['ege-english','ege-german','ege-french','ege-spanish','ege-chinese']){for(const q of (PB[s]||[])){if(stubRe.test(q.q)||stubRe.test(String(q.answer||''))){q.excludeFromFullExam=true;q.excludeFromExam=true;q.stub=true;q.mediaRequired=true;report.stubsHidden++}}}
+// Китайский язык: без носителя и аудио банк не наполняется, направление показывается как «в подготовке».
+for(const q of (PB['ege-chinese']||[])){q.excludeFromFullExam=true;q.excludeFromExam=true;q.stub=true;report.stubsHidden++}
+for(const s of ['ege-english','ege-german','ege-french','ege-spanish']){for(const q of (PB[s]||[])){if(stubRe.test(q.q)||stubRe.test(String(q.answer||''))){q.excludeFromFullExam=true;q.excludeFromExam=true;q.stub=true;q.mediaRequired=true;report.stubsHidden++}}}
 
 // ---------- 5. Пустые страницы: тексты и описания ----------
 const chekhov='На вокзале Николаевской железной дороги встретились два приятеля: один толстый, другой тонкий. Толстый только что пообедал на вокзале, и губы его, подёрнутые маслом, лоснились, как спелые вишни. Пахло от него хересом и флёр-д’оранжем. Тонкий же только что вышел из вагона и был навьючен чемоданами, узлами и картонками. Пахло от него ветчиной и кофейной гущей.\n— Порфирий! — воскликнул толстый, увидев тонкого. — Ты ли это? Голубчик мой! Сколько зим, сколько лет!\n— Батюшки! — изумился тонкий. — Миша! Друг детства! Откуда ты взялся?\n<…>\n— Я, ваше превосходительство… Очень приятно-с! Друг, можно сказать, детства и вдруг вышли в такие вельможи-с! Хи-хи-с.\n— Ну, полно! — поморщился толстый. — Для чего этот тон? Мы с тобой друзья детства — и к чему тут это чинопочитание!\n— Помилуйте… Что вы-с… — захихикал тонкий, ещё более съёживаясь.\n(А. П. Чехов. «Толстый и тонкий»)';

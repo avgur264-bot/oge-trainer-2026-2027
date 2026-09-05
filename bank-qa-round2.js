@@ -43,7 +43,7 @@ for(const [sub,total] of Object.entries(EXPECTED)){
  for(let t=1;t<=total;t++){
    const arr=tasks[t];if(!arr.length){missing.push(t);continue}
    const exact=new Set(),models=new Set();
-   for(const q of arr){const e=norm(q.q),m=sem(q.q);if(exact.has(e))exactDupes++;else exact.add(e);if(models.has(m))semanticDupes++;else models.add(m)}
+   for(const q of arr){const full=[q.q,...(q.left||[]),...(q.items||[]),...(q.opts||[]),q.passage||''].join(' ');const e=norm(full),m=sem(full);if(exact.has(e))exactDupes++;else exact.add(e);if(models.has(m))semanticDupes++;else models.add(m)}
    if(models.size<2)oneModel.push(t);
    tasks[t]={questions:arr.length,models:models.size,qaPass:arr.filter(q=>q.qaPass).length};
  }

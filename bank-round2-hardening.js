@@ -27,7 +27,7 @@ for(const [sub,items] of Object.entries(PB)){
   }
   if(q.type==='essay') q.manualCheck=true;
   if(q.type==='number' && q.answer!==undefined) q.answer=String(q.answer).replace(',','.');
-  const key=`${q.task}|${norm(q.q)}`;
+  const key=`${q.task}|${norm(q.q)}|${norm([...(q.left||[]),...(q.items||[]),...(q.opts||[]),q.passage||''].join(' '))}`;
   if(norm(q.q)&&seen.has(key)){
    report.semanticDuplicates.push({sub,task:q.task,kept:seen.get(key),dropped:q.id});
    continue;
