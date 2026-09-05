@@ -30,7 +30,7 @@ function parseNum(s){s=String(s??'').trim().toLowerCase().replace(/\s+/g,'').rep
  return /^[-+]?\d*\.?\d+$/.test(s)?parseFloat(s):NaN}
 function answerMatch(got,keys,t){const g=relax(got);if(!g)return false;const gn=parseNum(got);
  for(const k of keys){const kk=relax(k);if(!kk)continue;if(g===kk)return true;const kn=parseNum(k);
-  if(Number.isFinite(kn)&&(t==='number'||Number.isFinite(gn))){if(Number.isFinite(gn)&&(Math.abs(gn-kn)<=Math.abs(kn)*0.0105||Math.abs(gn-kn)<=0.005))return true;if(t==='number')continue}
+  if(Number.isFinite(kn)&&(t==='number'||Number.isFinite(gn))){if(Number.isFinite(gn)){if(gn===kn)return true;const dec=(String(got).trim().replace(',','.').split('.')[1]||'').replace(/e.*$/,'').length;if(dec>=2&&Math.abs(gn-kn)<=0.5*Math.pow(10,-dec)+1e-12)return true}if(t==='number')continue}
   if(relaxWords(g)===relaxWords(kk))return true;if(g.replace(/\s/g,'')===kk.replace(/\s/g,''))return true}
  return false}
 function shuffledIdx(n){const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
