@@ -1,8 +1,8 @@
-const VERSION='20270905-1';
+const VERSION='20270910-1';
 const ORIGINS=new Set(['https://avgur264-bot.github.io']);
 const cors={
   'Access-Control-Allow-Origin':'https://avgur264-bot.github.io',
-  'Access-Control-Allow-Methods':'GET,OPTIONS',
+  'Access-Control-Allow-Methods':'GET,POST,OPTIONS',
   'Access-Control-Allow-Headers':'Content-Type',
   'Cache-Control':'no-store'
 };
@@ -23,6 +23,31 @@ export default {
     if(request.method==='OPTIONS') return new Response(null,{headers:cors});
     const url=new URL(request.url);
     if(url.pathname==='/health') return Response.json({ok:true,service:'oge-room-server',version:VERSION},{headers:cors});
+    // Журнал результатов по ссылке-варианту: KV, ключ j:<id>. Пишет ученик (POST), читает репетитор (GET).
+    const jm=url.pathname.match(/^\/journal\/([a-z0-9]{8,16})$/);
+    if(jm){
+      const origin=request.headers.get('Origin');
+      if(!origin||!ORIGINS.has(origin)) return new Response('Forbidden origin',{status:403,headers:cors});
+      if(!env.JOURNAL) return new Response('Journal disabled',{status:503,headers:cors});
+      const key='j:'+jm[1];
+      if(request.method==='GET'){
+        const data=await env.JOURNAL.get(key,'json');
+        return Response.json(data||{id:jm[1],results:[]},{headers:cors});
+      }
+      if(request.method==='POST'){
+        let body;try{body=await request.json()}catch{return new Response('Bad JSON',{status:400,headers:cors})}
+        if(!body||typeof body!=='object') return new Response('Bad body',{status:400,headers:cors});
+        const name=String(body.name||'').slice(0,40).trim();if(!name) return new Response('Name required',{status:400,headers:cors});
+        const rec={name,qid:String(body.qid||'').slice(0,64),task:Number(body.task)||null,ok:body.ok===true,answer:String(body.answer||'').slice(0,300),done:body.done===true,score:Number(body.score)||0,total:Number(body.total)||0,ts:Date.now()};
+        const data=(await env.JOURNAL.get(key,'json'))||{id:jm[1],sub:String(body.sub||'').slice(0,32),label:String(body.label||'').slice(0,120),created:Date.now(),results:[]};
+        if(!Array.isArray(data.results)) data.results=[];
+        data.results.push(rec);
+        if(data.results.length>2000) data.results=data.results.slice(-2000);
+        await env.JOURNAL.put(key,JSON.stringify(data),{expirationTtl:60*60*24*365});
+        return Response.json({ok:true,count:data.results.length},{headers:cors});
+      }
+      return new Response('Method not allowed',{status:405,headers:cors});
+    }
     const m=url.pathname.match(/^\/room\/(\d{6})$/);
     if(!m) return new Response('Not found',{status:404,headers:cors});
     if(request.headers.get('Upgrade')!=='websocket') return new Response('WebSocket required',{status:426,headers:cors});

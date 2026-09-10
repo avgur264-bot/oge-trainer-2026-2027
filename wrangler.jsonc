@@ -9,6 +9,9 @@
       { "name": "LIMITER", "class_name": "JoinLimiter" }
     ]
   },
+  "kv_namespaces": [
+    { "binding": "JOURNAL", "id": "e4cf09d6f63b4b86bff6b9d9c18fe93d" }
+  ],
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["Room"] },
     { "tag": "v2", "new_sqlite_classes": ["JoinLimiter"] }
