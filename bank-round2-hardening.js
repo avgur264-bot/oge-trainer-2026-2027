@@ -20,7 +20,7 @@ for(const [sub,items] of Object.entries(PB)){
    report.removed.push({sub,id:q.id,task:q.task,reason:'unsafe-placeholder'});
    continue;
   }
-  if(q.mediaRequired||q.audioRequired||q.requiresAudio||mediaRe.test(text)){
+  if(!q.listen&&(q.mediaRequired||q.audioRequired||q.requiresAudio||mediaRe.test(text))){
    q.excludeFromFullExam=true;
    q.mediaRequired=true;
    report.mediaExcluded++;
