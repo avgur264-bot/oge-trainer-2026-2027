@@ -19,7 +19,7 @@ jobs:
         run: |
           set -e
           b=$(grep -o "BUILD='[^']*'" index.html | sed "s/BUILD='//;s/'//")
-          v=$(grep -o 'oge-trainer-2026.html?v=[^"]*' index.html | sed 's/.*?v=//')
+          v=$(grep -o 'src="oge-trainer-2026.html?v=[^"]*' index.html | sed 's/.*?v=//')
           echo "BUILD=$b iframe=$v"
           test -n "$b" && test "$b" = "$v"
       - name: Аудит банков заданий
