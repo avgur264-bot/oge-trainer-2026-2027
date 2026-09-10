@@ -89,7 +89,12 @@ function toggleFull(){const on=localStorage.getItem('oge-ege-2027-fullscreen')!=
 document.addEventListener('keydown',e=>{if(e.key==='f'||e.key==='F'||e.key==='а'||e.key==='А'){const quiz=document.querySelector('#quiz');if(quiz?.open&&!/INPUT|TEXTAREA/.test(document.activeElement?.tagName))toggleFull()}});
 function openVariantFromHash(){const v=parseVariantHash();if(!v)return false;const items=bank(v.sub).filter(q=>v.ids.includes(q.id));if(!items.length)return false;items.sort((a,b)=>v.ids.indexOf(a.id)-v.ids.indexOf(b.id));setTimeout(()=>begin(v.sub,items,`Вариант от репетитора · ${name(v.sub)}`),50);return true}
 openVariantFromHash();window.addEventListener('hashchange',openVariantFromHash);try{if(window.top!==window)window.top.addEventListener('hashchange',openVariantFromHash)}catch{}
-const quizEl=document.querySelector('#quiz');if(quizEl){new MutationObserver(()=>{if(quizEl.open)applyFull()}).observe(quizEl,{attributes:true,attributeFilter:['open']})}
+const quizEl=document.querySelector('#quiz');let quizHist=false;
+if(quizEl){new MutationObserver(()=>{if(quizEl.open){applyFull();if(!quizHist){try{history.pushState({v4quiz:1},'');quizHist=true}catch{}}}}).observe(quizEl,{attributes:true,attributeFilter:['open']});
+ // Закрытие окна: выйти из системного полноэкранного режима и убрать запись истории, чтобы «Назад» не открывал окно снова
+ quizEl.addEventListener('close',()=>{try{if(document.fullscreenElement)document.exitFullscreen().catch(()=>{})}catch{}if(quizHist){quizHist=false;try{history.back()}catch{}}});
+ // Кнопка «Назад» браузера закрывает окно задания вместо ухода со страницы
+ window.addEventListener('popstate',()=>{if(quizEl.open){quizHist=false;quizEl.close()}});}
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&localStorage.getItem('oge-ege-2027-fullscreen')==='1'){try{localStorage.setItem('oge-ege-2027-fullscreen','0')}catch{}applyFull()}});
 function textValue(){return document.querySelector('#modal #v4text')?.value??''}
 function evaluate(q){const t=qType(q);if(t==='choice')return state.selected===Number(q.a);if(t==='multi'){const got=[...document.querySelectorAll('#modal input[type=checkbox]:checked')].map(x=>+x.value).sort((a,b)=>a-b),raw=Array.isArray(q.answers)?q.answers:(Array.isArray(q.a)?q.a:(q.a===undefined||q.a===null?[]:[q.a])),want=[...new Set(raw.map(Number).filter(Number.isInteger))].sort((a,b)=>a-b);return want.length>0&&JSON.stringify(got)===JSON.stringify(want)}if(t==='essay')return null;const arr=[...(Array.isArray(q.answers)?q.answers:[]),q.answer].filter(x=>x!==undefined&&x!==null&&x!=='');return answerMatch(textValue(),arr,t)}
