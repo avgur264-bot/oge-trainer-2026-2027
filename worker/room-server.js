@@ -1,8 +1,8 @@
-const VERSION='20270910-1';
+const VERSION='20270914-1';
 const ORIGINS=new Set(['https://avgur264-bot.github.io']);
 const cors={
   'Access-Control-Allow-Origin':'https://avgur264-bot.github.io',
-  'Access-Control-Allow-Methods':'GET,POST,OPTIONS',
+  'Access-Control-Allow-Methods':'GET,POST,PUT,OPTIONS',
   'Access-Control-Allow-Headers':'Content-Type',
   'Cache-Control':'no-store'
 };
@@ -45,6 +45,25 @@ export default {
         if(data.results.length>2000) data.results=data.results.slice(-2000);
         await env.JOURNAL.put(key,JSON.stringify(data),{expirationTtl:60*60*24*365});
         return Response.json({ok:true,count:data.results.length},{headers:cors});
+      }
+      return new Response('Method not allowed',{status:405,headers:cors});
+    }
+    // Кабинет репетитора: один JSON-документ на код кабинета. Код знает только владелец.
+    const cm=url.pathname.match(/^\/cabinet\/([a-z0-9]{16})$/);
+    if(cm){
+      const origin=request.headers.get('Origin');
+      if(!origin||!ORIGINS.has(origin)) return new Response('Forbidden origin',{status:403,headers:cors});
+      if(!env.JOURNAL) return new Response('Storage disabled',{status:503,headers:cors});
+      const key='c:'+cm[1];
+      if(request.method==='GET'){const data=await env.JOURNAL.get(key,'text');return new Response(data||'null',{headers:{...cors,'Content-Type':'application/json'}})}
+      if(request.method==='PUT'){
+        const text=await request.text();if(text.length>512*1024) return new Response('Too large',{status:413,headers:cors});
+        let body;try{body=JSON.parse(text)}catch{return new Response('Bad JSON',{status:400,headers:cors})}
+        if(!body||typeof body!=='object'||!Array.isArray(body.students)) return new Response('Bad body',{status:400,headers:cors});
+        const prev=await env.JOURNAL.get(key,'json');
+        if(prev&&Number(prev.updatedAt)>Number(body.updatedAt)) return Response.json({ok:false,conflict:true,server:prev},{status:409,headers:cors});
+        await env.JOURNAL.put(key,text,{expirationTtl:60*60*24*730});
+        return Response.json({ok:true,updatedAt:body.updatedAt},{headers:cors});
       }
       return new Response('Method not allowed',{status:405,headers:cors});
     }
