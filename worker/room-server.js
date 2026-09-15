@@ -1,8 +1,9 @@
-const VERSION='20270914-1';
+const VERSION='20270915-1';
 const ORIGINS=new Set(['https://avgur264-bot.github.io']);
 const cors={
   'Access-Control-Allow-Origin':'https://avgur264-bot.github.io',
   'Access-Control-Allow-Methods':'GET,POST,PUT,OPTIONS',
+  'Access-Control-Allow-Headers':'Content-Type,Authorization',
   'Access-Control-Allow-Headers':'Content-Type',
   'Cache-Control':'no-store'
 };
@@ -49,6 +50,67 @@ export default {
       return new Response('Method not allowed',{status:405,headers:cors});
     }
     // Кабинет репетитора: один JSON-документ на код кабинета. Код знает только владелец.
+    // ---- Вход репетитора по почте: код из 6 цифр письмом, затем токен сессии ----
+    if(url.pathname.startsWith('/auth/')){
+      const origin=request.headers.get('Origin');
+      if(!origin||!ORIGINS.has(origin)) return new Response('Forbidden origin',{status:403,headers:cors});
+      if(!env.JOURNAL) return new Response('Storage disabled',{status:503,headers:cors});
+      const json=(o,st=200)=>Response.json(o,{status:st,headers:cors});
+      const sha=async t=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+      const rnd=(n,al)=>{const r=crypto.getRandomValues(new Uint8Array(n));let s='';for(const b of r)s+=al[b%al.length];return s};
+      const bearer=()=>(request.headers.get('Authorization')||'').replace(/^Bearer\s+/i,'').trim();
+      const session=async()=>{const t=bearer();if(!/^[a-f0-9]{48}$/.test(t))return null;return env.JOURNAL.get('sess:'+t,'json')};
+      let body={};if(request.method==='POST'){try{body=await request.json()}catch{return json({ok:false,error:'Bad JSON'},400)}}
+      const email=String(body.email||'').trim().toLowerCase();
+      const emailOk=/^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,}$/i.test(email);
+      if(url.pathname==='/auth/request'&&request.method==='POST'){
+        if(!emailOk) return json({ok:false,error:'Укажите корректный адрес почты'},400);
+        if(!env.MAIL_API_KEY||!env.MAIL_FROM) return json({ok:false,error:'Отправка писем на сервере ещё не настроена'},503);
+        const rlKey='rl:'+email;const rl=Number(await env.JOURNAL.get(rlKey))||0;
+        if(rl>=3) return json({ok:false,error:'Слишком много запросов. Попробуйте через 15 минут'},429);
+        await env.JOURNAL.put(rlKey,String(rl+1),{expirationTtl:900});
+        const code=String(crypto.getRandomValues(new Uint32Array(1))[0]%1000000).padStart(6,'0');
+        const salt=rnd(16,'abcdef0123456789');
+        await env.JOURNAL.put('login:'+email,JSON.stringify({h:await sha(salt+code),salt,tries:0,exp:Date.now()+10*60*1000}),{expirationTtl:600});
+        const subject='Код входа в кабинет репетитора: '+code;
+        const text=`Ваш код для входа в ОГЭ‑ЕГЭ Навигатор 2027: ${code}\n\nКод действует 10 минут. Если вы не запрашивали вход — просто не обращайте внимания на это письмо.`;
+        const html=`<div style="font-family:system-ui,Arial,sans-serif;font-size:16px;color:#17231d"><p>Ваш код для входа в кабинет репетитора <b>ОГЭ‑ЕГЭ Навигатор 2027</b>:</p><p style="font-size:34px;letter-spacing:.2em;font-weight:800;margin:14px 0">${code}</p><p style="color:#667269">Код действует 10 минут. Если вы не запрашивали вход, просто не обращайте внимания на это письмо.</p></div>`;
+        let sent=false,err='';
+        try{
+          if((env.MAIL_PROVIDER||'brevo')==='resend'){
+            const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Authorization':'Bearer '+env.MAIL_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({from:env.MAIL_FROM,to:[email],subject,text,html})});
+            sent=r.ok;if(!sent)err=(await r.text()).slice(0,200);
+          }else{
+            const m=env.MAIL_FROM.match(/^(.*?)<([^>]+)>$/);const sender=m?{name:m[1].trim(),email:m[2].trim()}:{name:'ОГЭ-ЕГЭ Навигатор',email:env.MAIL_FROM};
+            const r=await fetch('https://api.brevo.com/v3/smtp/email',{method:'POST',headers:{'api-key':env.MAIL_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({sender,to:[{email}],subject,textContent:text,htmlContent:html})});
+            sent=r.ok;if(!sent)err=(await r.text()).slice(0,200);
+          }
+        }catch(e){err=String(e).slice(0,200)}
+        if(!sent){console.log('mail error',err);return json({ok:false,error:'Не удалось отправить письмо. Проверьте адрес и попробуйте позже'},502)}
+        return json({ok:true});
+      }
+      if(url.pathname==='/auth/verify'&&request.method==='POST'){
+        const code=String(body.code||'').replace(/\D/g,'');
+        if(!emailOk||code.length!==6) return json({ok:false,error:'Введите 6 цифр из письма'},400);
+        const rec=await env.JOURNAL.get('login:'+email,'json');
+        if(!rec||rec.exp<Date.now()) return json({ok:false,error:'Код устарел. Запросите новый'},400);
+        if(rec.tries>=5){await env.JOURNAL.delete('login:'+email);return json({ok:false,error:'Слишком много попыток. Запросите новый код'},429)}
+        if(await sha(rec.salt+code)!==rec.h){rec.tries++;await env.JOURNAL.put('login:'+email,JSON.stringify(rec),{expirationTtl:600});return json({ok:false,error:'Неверный код'},400)}
+        await env.JOURNAL.delete('login:'+email);
+        let acct=await env.JOURNAL.get('acct:'+email,'json');
+        if(!acct){acct={cabinet:rnd(16,'abcdefghijklmnopqrstuvwxyz0123456789'),created:Date.now()};await env.JOURNAL.put('acct:'+email,JSON.stringify(acct))}
+        const token=rnd(48,'abcdef0123456789');
+        await env.JOURNAL.put('sess:'+token,JSON.stringify({email,created:Date.now()}),{expirationTtl:60*60*24*90});
+        return json({ok:true,token,email,cabinet:acct.cabinet});
+      }
+      if(url.pathname==='/auth/me'&&request.method==='GET'){
+        const s=await session();if(!s) return json({ok:false},401);
+        const acct=await env.JOURNAL.get('acct:'+s.email,'json');if(!acct) return json({ok:false},401);
+        return json({ok:true,email:s.email,cabinet:acct.cabinet});
+      }
+      if(url.pathname==='/auth/logout'&&request.method==='POST'){const t=bearer();if(/^[a-f0-9]{48}$/.test(t))await env.JOURNAL.delete('sess:'+t);return json({ok:true})}
+      return new Response('Not found',{status:404,headers:cors});
+    }
     const cm=url.pathname.match(/^\/cabinet\/([a-z0-9]{16})$/);
     if(cm){
       const origin=request.headers.get('Origin');
