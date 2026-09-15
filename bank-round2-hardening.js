@@ -27,7 +27,9 @@ for(const [sub,items] of Object.entries(PB)){
   }
   if(q.type==='essay') q.manualCheck=true;
   if(q.type==='number' && q.answer!==undefined) q.answer=String(q.answer).replace(',','.');
-  const key=`${q.task}|${norm(q.q)}|${norm([...(q.left||[]),...(q.items||[]),...(q.opts||[]),q.passage||''].join(' '))}`;
+  // задания с картой/изображением различаются картинкой, а не текстом вопроса
+  const mediaSig=q.media?(q.media.src||(q.media.svg?'svg'+String(q.media.svg).length+String(q.media.svg).slice(0,80):'')):'';
+  const key=`${q.task}|${norm(q.q)}|${norm([...(q.left||[]),...(q.items||[]),...(q.opts||[]),q.passage||''].join(' '))}|${mediaSig}`;
   if(norm(q.q)&&seen.has(key)){
    report.semanticDuplicates.push({sub,task:q.task,kept:seen.get(key),dropped:q.id});
    continue;
